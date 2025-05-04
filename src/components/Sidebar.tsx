@@ -3,7 +3,7 @@ import React from "react";
 import { cn } from "@/lib/utils";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
-import { X, Home, Cow, Tool, BarChart3 } from "lucide-react";
+import { X, Home, PawPrint, Wrench, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -95,7 +95,7 @@ const Sidebar = ({ open, setOpen }: SidebarProps) => {
                 )
               }
             >
-              <Cow className="h-4 w-4" />
+              <PawPrint className="h-4 w-4" />
               <span>Animals</span>
             </NavLink>
             <NavLink
@@ -109,7 +109,7 @@ const Sidebar = ({ open, setOpen }: SidebarProps) => {
                 )
               }
             >
-              <Tool className="h-4 w-4" />
+              <Wrench className="h-4 w-4" />
               <span>Care Tools</span>
             </NavLink>
 
