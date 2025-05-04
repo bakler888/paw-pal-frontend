@@ -1,0 +1,237 @@
+
+import React from "react";
+import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { getAllAnimals, getAllCareTools } from "@/services/api";
+import { PiggyBank, Tool, Tractor, AlertTriangle } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+
+const Dashboard = () => {
+  const { user } = useAuth();
+
+  const { data: animals, isLoading: animalsLoading } = useQuery({
+    queryKey: ["animals"],
+    queryFn: getAllAnimals,
+  });
+
+  const { data: tools, isLoading: toolsLoading } = useQuery({
+    queryKey: ["careTools"],
+    queryFn: getAllCareTools,
+  });
+
+  // Calculate animals with health issues
+  const animalsWithHealthIssues = animals?.filter(
+    (animal) => animal.healthStatus.toLowerCase() !== "healthy"
+  ).length;
+
+  // Calculate tools that need maintenance
+  const toolsNeedingMaintenance = tools?.filter(
+    (tool) => tool.condition.toLowerCase() !== "good"
+  ).length;
+
+  return (
+    <div className="space-y-8">
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          Welcome, {user?.name}
+        </h1>
+        <div className="flex space-x-2">
+          <Button className="bg-farm-green hover:bg-farm-green/90">
+            <Link to="/animals/add">Add Animal</Link>
+          </Button>
+          <Button className="bg-farm-brown hover:bg-farm-brown/90">
+            <Link to="/care-tools/add">Add Tool</Link>
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Total Animals
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div className="text-3xl font-bold">
+                {animalsLoading ? "-" : animals?.length || 0}
+              </div>
+              <PiggyBank className="h-8 w-8 text-farm-green" />
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              Manage your farm animals
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Care Tools
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div className="text-3xl font-bold">
+                {toolsLoading ? "-" : tools?.length || 0}
+              </div>
+              <Tool className="h-8 w-8 text-farm-brown" />
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              Tools in your inventory
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Health Alerts
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div className="text-3xl font-bold">
+                {animalsLoading ? "-" : animalsWithHealthIssues || 0}
+              </div>
+              <AlertTriangle className="h-8 w-8 text-yellow-500" />
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              Animals need attention
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Maintenance Needed
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div className="text-3xl font-bold">
+                {toolsLoading ? "-" : toolsNeedingMaintenance || 0}
+              </div>
+              <Tractor className="h-8 w-8 text-orange-500" />
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              Tools need maintenance
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Recent Animals</CardTitle>
+            </div>
+            <Button variant="outline" size="sm">
+              <Link to="/animals">View All</Link>
+            </Button>
+          </CardHeader>
+          <CardContent>
+            {animalsLoading ? (
+              <div className="flex justify-center py-8">
+                <div className="loader"></div>
+              </div>
+            ) : animals && animals.length > 0 ? (
+              <div className="space-y-4">
+                {animals.slice(0, 5).map((animal) => (
+                  <div
+                    key={animal.id}
+                    className="flex items-center justify-between p-3 bg-muted rounded-md"
+                  >
+                    <div>
+                      <p className="font-medium">{animal.name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {animal.breed}, {animal.age} years
+                      </p>
+                    </div>
+                    <div>
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          animal.healthStatus.toLowerCase() === "healthy"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-yellow-100 text-yellow-800"
+                        }`}
+                      >
+                        {animal.healthStatus}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">No animals added yet</p>
+                <Button className="mt-4 bg-farm-green hover:bg-farm-green/90">
+                  <Link to="/animals/add">Add Animal</Link>
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Recent Care Tools</CardTitle>
+            </div>
+            <Button variant="outline" size="sm">
+              <Link to="/care-tools">View All</Link>
+            </Button>
+          </CardHeader>
+          <CardContent>
+            {toolsLoading ? (
+              <div className="flex justify-center py-8">
+                <div className="loader"></div>
+              </div>
+            ) : tools && tools.length > 0 ? (
+              <div className="space-y-4">
+                {tools.slice(0, 5).map((tool) => (
+                  <div
+                    key={tool.id}
+                    className="flex items-center justify-between p-3 bg-muted rounded-md"
+                  >
+                    <div>
+                      <p className="font-medium">{tool.name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {tool.purpose}
+                      </p>
+                    </div>
+                    <div>
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          tool.condition.toLowerCase() === "good"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-orange-100 text-orange-800"
+                        }`}
+                      >
+                        {tool.condition}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">No care tools added yet</p>
+                <Button className="mt-4 bg-farm-brown hover:bg-farm-brown/90">
+                  <Link to="/care-tools/add">Add Tool</Link>
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+};
+
+export default Dashboard;
