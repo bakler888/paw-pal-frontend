@@ -61,20 +61,20 @@ const Register = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background farm-pattern px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-8 animate-fade-in">
-        <div className="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-8">
+        <div className="bg-white dark:bg-gray-800 shadow-xl rounded-lg p-8 border-2 border-farm-green/20">
           <div className="text-center">
             <div className="flex items-center justify-center">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                width="32"
-                height="32"
+                width="40"
+                height="40"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="h-10 w-10 text-farm-green"
+                className="h-14 w-14 text-farm-green"
               >
                 <path d="M3 9a2 2 0 0 1 2 -2h4a2 2 0 0 1 2 2v9a2 2 0 0 1 -2 2h-4a2 2 0 0 1 -2 -2v-9z" />
                 <path d="M9 16h6" />
@@ -83,23 +83,27 @@ const Register = () => {
                 <path d="M18 7v-4" />
               </svg>
             </div>
-            <h2 className="mt-4 text-2xl font-bold text-farm-green">Create Account</h2>
-            <p className="mt-2 text-gray-500">Sign up to start managing your farm</p>
+            <h2 className="mt-4 text-3xl font-bold text-farm-green">Create Account</h2>
+            <p className="mt-2 text-gray-600 dark:text-gray-400 font-medium">Sign up to start managing your farm</p>
           </div>
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="mt-8 space-y-6">
-              <div className="space-y-4">
+              <div className="space-y-5">
                 <FormField
                   control={form.control}
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Full Name</FormLabel>
+                      <FormLabel className="text-gray-700 dark:text-gray-300 font-medium">Full Name</FormLabel>
                       <FormControl>
-                        <Input placeholder="John Doe" {...field} />
+                        <Input 
+                          placeholder="John Doe" 
+                          {...field} 
+                          className="border-2 border-farm-green/20 focus:border-farm-green/50 bg-white dark:bg-gray-900"
+                        />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-red-600" />
                     </FormItem>
                   )}
                 />
@@ -109,11 +113,15 @@ const Register = () => {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email</FormLabel>
+                      <FormLabel className="text-gray-700 dark:text-gray-300 font-medium">Email</FormLabel>
                       <FormControl>
-                        <Input placeholder="email@example.com" {...field} />
+                        <Input 
+                          placeholder="email@example.com" 
+                          {...field} 
+                          className="border-2 border-farm-green/20 focus:border-farm-green/50 bg-white dark:bg-gray-900"
+                        />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-red-600" />
                     </FormItem>
                   )}
                 />
@@ -123,11 +131,16 @@ const Register = () => {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Password</FormLabel>
+                      <FormLabel className="text-gray-700 dark:text-gray-300 font-medium">Password</FormLabel>
                       <FormControl>
-                        <Input type="password" placeholder="••••••" {...field} />
+                        <Input 
+                          type="password" 
+                          placeholder="••••••" 
+                          {...field} 
+                          className="border-2 border-farm-green/20 focus:border-farm-green/50 bg-white dark:bg-gray-900"
+                        />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-red-600" />
                     </FormItem>
                   )}
                 />
@@ -137,11 +150,16 @@ const Register = () => {
                   name="confirmPassword"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Confirm Password</FormLabel>
+                      <FormLabel className="text-gray-700 dark:text-gray-300 font-medium">Confirm Password</FormLabel>
                       <FormControl>
-                        <Input type="password" placeholder="••••••" {...field} />
+                        <Input 
+                          type="password" 
+                          placeholder="••••••" 
+                          {...field} 
+                          className="border-2 border-farm-green/20 focus:border-farm-green/50 bg-white dark:bg-gray-900"
+                        />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-red-600" />
                     </FormItem>
                   )}
                 />
@@ -149,7 +167,7 @@ const Register = () => {
 
               <Button
                 type="submit"
-                className="w-full bg-farm-green hover:bg-farm-green/90"
+                className="w-full bg-farm-green hover:bg-farm-green/90 text-white font-bold py-3 shadow-md hover:shadow-lg transition-all"
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -162,10 +180,10 @@ const Register = () => {
                 )}
               </Button>
 
-              <div className="text-center text-sm">
+              <div className="text-center text-sm mt-4">
                 <p>
                   Already have an account?{" "}
-                  <Link to="/login" className="text-farm-green hover:underline">
+                  <Link to="/login" className="text-farm-green font-bold hover:underline">
                     Sign in
                   </Link>
                 </p>
