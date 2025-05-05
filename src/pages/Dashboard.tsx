@@ -1,11 +1,10 @@
-
 import React from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { getAllAnimals, getAllCareTools } from "@/services/api";
-import { PiggyBank, Tool, Tractor, AlertTriangle } from "lucide-react";
+import { PiggyBank, AlertTriangle, BarChart3 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
 const Dashboard = () => {
@@ -78,7 +77,20 @@ const Dashboard = () => {
               <div className="text-3xl font-bold">
                 {toolsLoading ? "-" : tools?.length || 0}
               </div>
-              <Tool className="h-8 w-8 text-farm-brown" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24" 
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-8 w-8 text-farm-brown"
+              >
+                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+              </svg>
             </div>
             <p className="text-xs text-muted-foreground mt-2">
               Tools in your inventory
@@ -116,7 +128,24 @@ const Dashboard = () => {
               <div className="text-3xl font-bold">
                 {toolsLoading ? "-" : toolsNeedingMaintenance || 0}
               </div>
-              <Tractor className="h-8 w-8 text-orange-500" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24" 
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-8 w-8 text-orange-500"
+              >
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <circle cx="9" cy="9" r="2" />
+                <path d="M13 9h4" />
+                <path d="M13 15h4" />
+                <path d="M9 15h.01" />
+              </svg>
             </div>
             <p className="text-xs text-muted-foreground mt-2">
               Tools need maintenance

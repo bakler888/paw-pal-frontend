@@ -20,7 +20,9 @@ const registerFormSchema = z
   .object({
     name: z.string().min(2, { message: "Name must be at least 2 characters" }),
     email: z.string().email({ message: "Please enter a valid email address" }),
-    password: z.string().min(6, { message: "Password must be at least 6 characters" }),
+    password: z
+      .string()
+      .min(6, { message: "Password must be at least 6 characters" }),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -31,7 +33,7 @@ const registerFormSchema = z
 type RegisterFormValues = z.infer<typeof registerFormSchema>;
 
 const Register = () => {
-  const { register, isLoading } = useAuth();
+  const { register: registerUser, isLoading } = useAuth();
 
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerFormSchema),
@@ -45,9 +47,11 @@ const Register = () => {
 
   const onSubmit = async (values: RegisterFormValues) => {
     try {
-      // Remove the confirmPassword field before sending to API
-      const { confirmPassword, ...registrationData } = values;
-      await register(registrationData);
+      await registerUser({
+        name: values.name,
+        email: values.email,
+        password: values.password
+      });
     } catch (error) {
       console.error("Registration failed:", error);
       // Error is handled by API service

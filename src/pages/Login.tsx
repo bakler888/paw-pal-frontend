@@ -36,7 +36,10 @@ const Login = () => {
 
   const onSubmit = async (values: LoginFormValues) => {
     try {
-      await login(values);
+      await login({
+        email: values.email,
+        password: values.password
+      });
     } catch (error) {
       console.error("Login failed:", error);
       // Error is handled by API service
