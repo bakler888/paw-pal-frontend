@@ -61,7 +61,7 @@ const Register = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background farm-pattern px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-8 animate-fade-in">
-        <div className="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-8 border-2 border-farm-green">
+        <div className="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-8">
           <div className="text-center">
             <div className="flex items-center justify-center">
               <svg
@@ -74,7 +74,7 @@ const Register = () => {
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="h-12 w-12 text-farm-green"
+                className="h-10 w-10 text-farm-green"
               >
                 <path d="M3 9a2 2 0 0 1 2 -2h4a2 2 0 0 1 2 2v9a2 2 0 0 1 -2 2h-4a2 2 0 0 1 -2 -2v-9z" />
                 <path d="M9 16h6" />
@@ -83,8 +83,8 @@ const Register = () => {
                 <path d="M18 7v-4" />
               </svg>
             </div>
-            <h2 className="mt-4 text-3xl font-bold text-farm-green">Create Account</h2>
-            <p className="mt-2 text-gray-600 dark:text-gray-300 font-medium">Sign up to start managing your farm</p>
+            <h2 className="mt-4 text-2xl font-bold text-farm-green">Create Account</h2>
+            <p className="mt-2 text-gray-500">Sign up to start managing your farm</p>
           </div>
 
           <Form {...form}>
@@ -95,9 +95,9 @@ const Register = () => {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-gray-700 dark:text-gray-200 font-semibold">Full Name</FormLabel>
+                      <FormLabel>Full Name</FormLabel>
                       <FormControl>
-                        <Input placeholder="John Doe" className="border-2 border-farm-green/30 focus:border-farm-green" {...field} />
+                        <Input placeholder="John Doe" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -109,9 +109,9 @@ const Register = () => {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-gray-700 dark:text-gray-200 font-semibold">Email</FormLabel>
+                      <FormLabel>Email</FormLabel>
                       <FormControl>
-                        <Input placeholder="email@example.com" className="border-2 border-farm-green/30 focus:border-farm-green" {...field} />
+                        <Input placeholder="email@example.com" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -123,9 +123,9 @@ const Register = () => {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-gray-700 dark:text-gray-200 font-semibold">Password</FormLabel>
+                      <FormLabel>Password</FormLabel>
                       <FormControl>
-                        <Input type="password" placeholder="••••••" className="border-2 border-farm-green/30 focus:border-farm-green" {...field} />
+                        <Input type="password" placeholder="••••••" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -137,9 +137,9 @@ const Register = () => {
                   name="confirmPassword"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-gray-700 dark:text-gray-200 font-semibold">Confirm Password</FormLabel>
+                      <FormLabel>Confirm Password</FormLabel>
                       <FormControl>
-                        <Input type="password" placeholder="••••••" className="border-2 border-farm-green/30 focus:border-farm-green" {...field} />
+                        <Input type="password" placeholder="••••••" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -149,7 +149,7 @@ const Register = () => {
 
               <Button
                 type="submit"
-                className="w-full bg-farm-green hover:bg-farm-green/90 text-white font-bold py-3 px-4 shadow-md transition-all hover:shadow-lg"
+                className="w-full bg-farm-green hover:bg-farm-green/90"
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -162,10 +162,10 @@ const Register = () => {
                 )}
               </Button>
 
-              <div className="text-center text-sm mt-4">
-                <p className="text-gray-600 dark:text-gray-300">
+              <div className="text-center text-sm">
+                <p>
                   Already have an account?{" "}
-                  <Link to="/login" className="text-farm-green font-bold hover:underline">
+                  <Link to="/login" className="text-farm-green hover:underline">
                     Sign in
                   </Link>
                 </p>
