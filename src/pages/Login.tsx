@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Link } from "react-router-dom";
 import { z } from "zod";
@@ -37,6 +36,7 @@ const Login = () => {
 
   const onSubmit = async (values: LoginFormValues) => {
     try {
+      console.log("Login form submission:", values);
       await login({
         email: values.email,
         password: values.password

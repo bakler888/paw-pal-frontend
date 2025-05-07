@@ -1,18 +1,17 @@
-
 import { toast } from "sonner";
 
 const API_URL = "https://localhost:7227/api"; // Update this with your actual API URL
 
 interface LoginRequest {
-  userName: string; // Changed from email to userName to match your DTO
+  userName: string; 
   password: string;
 }
 
 interface RegisterRequest {
-  userName: string; // Changed from name to userName to match your DTO
+  userName: string;
   email: string;
   password: string;
-  role?: string; // Added optional role field
+  role?: string;
 }
 
 interface Animal {
@@ -35,11 +34,28 @@ interface CareToolItem {
   notes?: string;
 }
 
+// Helper function to parse JSON safely
+const safeJsonParse = async (response) => {
+  const text = await response.text();
+  if (!text) return {};
+  
+  try {
+    return JSON.parse(text);
+  } catch (error) {
+    console.error("JSON Parse Error:", error, "Response Text:", text);
+    // If it starts with "User created successfully" but isn't valid JSON
+    if (text.includes("User created successfully")) {
+      return { message: "Registration successful" };
+    }
+    throw new Error(`Invalid server response: ${text}`);
+  }
+};
+
 // Helper function to handle API responses
-const handleResponse = async (response: Response) => {
+const handleResponse = async (response) => {
   if (!response.ok) {
     if (response.status === 400) {
-      const errorData = await response.json().catch(() => ({ message: "Invalid request data" }));
+      const errorData = await safeJsonParse(response).catch(() => ({ message: "Invalid request data" }));
       throw new Error(errorData.message || "Invalid request data");
     }
     if (response.status === 401) {
@@ -55,10 +71,12 @@ const handleResponse = async (response: Response) => {
       throw new Error("Server error. Please try again later.");
     }
     
-    const errorData = await response.json().catch(() => ({ message: "An unknown error occurred" }));
+    const errorData = await safeJsonParse(response).catch(() => ({ message: "An unknown error occurred" }));
     throw new Error(errorData.message || "Failed to process request");
   }
-  return response.json();
+  
+  // For successful responses, also use safe JSON parsing
+  return safeJsonParse(response);
 };
 
 // Authentication
@@ -83,14 +101,22 @@ export const login = async (credentials: { email: string, password: string }) =>
     const data = await handleResponse(response);
     console.log("Login response:", JSON.stringify(data));
     
-    // Store token
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("user", JSON.stringify({
-      id: data.id || data.userId,
-      name: data.userName || data.name,
-      email: data.email
-    }));
-    return data;
+    // Store token and user data
+    if (data.token) {
+      localStorage.setItem("token", data.token);
+      
+      // Create user object from response
+      const userData = {
+        id: data.id || data.userId || "user-id",
+        name: data.userName || data.name || loginRequest.userName,
+        email: data.email || loginRequest.userName
+      };
+      
+      localStorage.setItem("user", JSON.stringify(userData));
+      return userData;
+    } else {
+      throw new Error("No authentication token received");
+    }
   } catch (error) {
     console.error("Login error:", error);
     toast.error(error instanceof Error ? error.message : "Failed to log in");
@@ -118,9 +144,30 @@ export const register = async (userData: { name: string, email: string, password
       body: JSON.stringify(registerRequest),
     });
     
-    const data = await handleResponse(response);
-    console.log("Register response:", JSON.stringify(data));
-    return data;
+    // Handle non-JSON responses from registration endpoint
+    if (response.ok) {
+      const text = await response.text();
+      console.log("Register raw response:", text);
+      
+      // If the response is not valid JSON but contains success message
+      if (text.includes("User created successfully")) {
+        toast.success("Registration successful! Please log in.");
+        return { success: true, message: "User created successfully" };
+      }
+      
+      // Try to parse as JSON if possible
+      try {
+        const data = JSON.parse(text);
+        return data;
+      } catch (e) {
+        // If not valid JSON but response was successful, return generic success
+        return { success: true };
+      }
+    } else {
+      const errorData = await safeJsonParse(response).catch(() => null);
+      const errorMessage = errorData?.message || "Registration failed";
+      throw new Error(errorMessage);
+    }
   } catch (error) {
     console.error("Register error:", error);
     toast.error(error instanceof Error ? error.message : "Failed to register");
@@ -130,40 +177,43 @@ export const register = async (userData: { name: string, email: string, password
 
 export const logout = async () => {
   try {
-    await fetch(`${API_URL}/Authentication/LogOut`, {
+    // Clear local storage first to ensure we always log out
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    
+    // Then try API call, but don't wait for success
+    fetch(`${API_URL}/Authentication/LogOut`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${localStorage.getItem("token")}`
       },
-    });
+    }).catch(e => console.error("Logout API error (non-critical):", e));
     
-    // Clear local storage
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
     return true;
   } catch (error) {
     console.error("Logout error:", error);
-    // Still remove token and user from local storage even if API call fails
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    return true;
+    return true; // Always return success for logout
   }
 };
 
 export const getUserInfo = async () => {
   try {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      throw new Error("No authentication token");
+    }
+    
     const response = await fetch(`${API_URL}/Authentication/ShowMe`, {
       method: "GET",
       headers: {
-        "Authorization": `Bearer ${localStorage.getItem("token")}`
+        "Authorization": `Bearer ${token}`
       },
     });
     
     return await handleResponse(response);
   } catch (error) {
     console.error("Get user info error:", error);
-    toast.error(error instanceof Error ? error.message : "Failed to get user information");
     throw error;
   }
 };

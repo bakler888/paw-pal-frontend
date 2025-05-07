@@ -37,31 +37,63 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const navigate = useNavigate();
 
+  // Function to get user from localStorage
+  const getUserFromStorage = () => {
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      try {
+        return JSON.parse(userStr);
+      } catch (e) {
+        console.error("Error parsing user from localStorage:", e);
+        return null;
+      }
+    }
+    return null;
+  };
+
   useEffect(() => {
     const checkAuthStatus = async () => {
       setIsLoading(true);
       try {
         const token = localStorage.getItem("token");
-        if (token) {
-          // Try to get stored user data first
-          const storedUser = localStorage.getItem("user");
-          if (storedUser) {
-            setUser(JSON.parse(storedUser));
-          } else {
-            // If no stored user data, fetch from API
-            try {
-              const userData = await getUserInfo();
-              setUser(userData);
-            } catch (error) {
-              console.log("Failed to get user info, clearing token");
-              localStorage.removeItem("token");
+        if (!token) {
+          setUser(null);
+          return;
+        }
+        
+        // Try to get stored user data
+        const storedUser = getUserFromStorage();
+        if (storedUser?.id && storedUser?.name) {
+          console.log("Using stored user data:", storedUser);
+          setUser(storedUser);
+        } else {
+          // If no valid stored user data, try fetching from API
+          try {
+            console.log("Fetching user info from API");
+            const userData = await getUserInfo();
+            if (userData) {
+              const userToStore = {
+                id: userData.id || userData.userId || "user-id",
+                name: userData.userName || userData.name || "User",
+                email: userData.email || ""
+              };
+              setUser(userToStore);
+              localStorage.setItem("user", JSON.stringify(userToStore));
+            } else {
+              throw new Error("No user data returned");
             }
+          } catch (error) {
+            console.log("Failed to get user info, clearing token", error);
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+            setUser(null);
           }
         }
       } catch (error) {
         console.error("Auth check error:", error);
         localStorage.removeItem("token");
         localStorage.removeItem("user");
+        setUser(null);
       } finally {
         setIsLoading(false);
       }
@@ -73,18 +105,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = async (credentials: LoginCredentials) => {
     setIsLoading(true);
     try {
-      const data = await apiLogin(credentials);
+      const userData = await apiLogin(credentials);
       
-      // Extract user data from response or use stored data
-      const userData = {
-        id: data.id || data.userId || "",
-        name: data.userName || data.name || credentials.email,
-        email: data.email || credentials.email
-      };
-      
-      setUser(userData);
-      toast.success("Successfully logged in!");
-      navigate("/dashboard");
+      if (userData) {
+        // Store user data in state
+        setUser(userData);
+        toast.success("Successfully logged in!");
+        
+        // Add small delay before navigation to ensure state updates
+        setTimeout(() => {
+          navigate("/dashboard");
+        }, 100);
+      } else {
+        throw new Error("Login failed - no user data returned");
+      }
     } catch (error) {
       console.error("Login error:", error);
       throw error;
@@ -96,9 +130,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const register = async (userData: RegisterData) => {
     setIsLoading(true);
     try {
-      await apiRegister(userData);
+      const result = await apiRegister(userData);
+      console.log("Registration result:", result);
+      
       toast.success("Registration successful! Please log in.");
-      navigate("/login");
+      
+      // Add small delay before navigation
+      setTimeout(() => {
+        navigate("/login");
+      }, 100);
     } catch (error) {
       console.error("Register error:", error);
       throw error;
@@ -112,29 +152,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       await apiLogout();
       setUser(null);
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
+      
       toast.success("Successfully logged out!");
-      navigate("/");
+      
+      // Add small delay before navigation
+      setTimeout(() => {
+        navigate("/");
+      }, 100);
     } catch (error) {
       console.error("Logout error:", error);
       // Still clear user data even if API call fails
       setUser(null);
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const value = {
+  // Use the memo pattern to prevent unnecessary re-renders
+  const value = React.useMemo(() => ({
     user,
     isAuthenticated: !!user,
     isLoading,
     login,
     register,
     logout
-  };
+  }), [user, isLoading]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
