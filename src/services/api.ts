@@ -1,17 +1,18 @@
 
 import { toast } from "sonner";
 
-const API_URL = "http://localhost:5000"; // Update this with your actual API URL
+const API_URL = "https://localhost:7227/api"; // Update this with your actual API URL
 
 interface LoginRequest {
-  email: string;
+  userName: string; // Changed from email to userName to match your DTO
   password: string;
 }
 
 interface RegisterRequest {
-  name: string;
+  userName: string; // Changed from name to userName to match your DTO
   email: string;
   password: string;
+  role?: string; // Added optional role field
 }
 
 interface Animal {
@@ -44,20 +45,30 @@ const handleResponse = async (response: Response) => {
 };
 
 // Authentication
-export const login = async (credentials: LoginRequest) => {
+export const login = async (credentials: { email: string, password: string }) => {
   try {
-    const response = await fetch(`${API_URL}/Authentication/Login`, {
+    // Convert the incoming email/password format to the userName/password format expected by the API
+    const loginRequest: LoginRequest = {
+      userName: credentials.email, // Using email as userName
+      password: credentials.password,
+    };
+    
+    const response = await fetch(`${API_URL}/Auth/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(credentials),
+      body: JSON.stringify(loginRequest),
     });
     
     const data = await handleResponse(response);
     // Store token
     localStorage.setItem("token", data.token);
-    localStorage.setItem("user", JSON.stringify(data.user));
+    localStorage.setItem("user", JSON.stringify({
+      id: data.id || data.userId,
+      name: data.userName || data.name,
+      email: data.email
+    }));
     return data;
   } catch (error) {
     console.error("Login error:", error);
@@ -66,14 +77,22 @@ export const login = async (credentials: LoginRequest) => {
   }
 };
 
-export const register = async (userData: RegisterRequest) => {
+export const register = async (userData: { name: string, email: string, password: string }) => {
   try {
-    const response = await fetch(`${API_URL}/Authentication/Register`, {
+    // Convert to your API's expected format
+    const registerRequest: RegisterRequest = {
+      userName: userData.name,
+      email: userData.email,
+      password: userData.password,
+      role: "User" // Default role
+    };
+    
+    const response = await fetch(`${API_URL}/Auth/register`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(userData),
+      body: JSON.stringify(registerRequest),
     });
     
     return await handleResponse(response);

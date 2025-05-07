@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 
 const loginFormSchema = z.object({
-  email: z.string().email({ message: "Please enter a valid email address" }),
+  email: z.string().min(3, { message: "Username or email must be at least 3 characters" }),
   password: z.string().min(6, { message: "Password must be at least 6 characters" }),
 });
 
@@ -37,7 +37,7 @@ const Login = () => {
   const onSubmit = async (values: LoginFormValues) => {
     try {
       await login({
-        email: values.email,
+        email: values.email, // We'll handle the conversion in the API service
         password: values.password
       });
     } catch (error) {
@@ -49,7 +49,7 @@ const Login = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background farm-pattern px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-8 animate-fade-in">
-        <div className="bg-white dark:bg-gray-800 shadow-xl rounded-lg p-8 border-2 border-farm-green/20">
+        <div className="bg-white dark:bg-gray-800 shadow-xl rounded-lg p-8 border-4 border-farm-green">
           <div className="text-center">
             <div className="flex items-center justify-center">
               <svg
@@ -62,7 +62,7 @@ const Login = () => {
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="h-14 w-14 text-farm-green"
+                className="h-16 w-16 text-farm-green"
               >
                 <path d="M3 9a2 2 0 0 1 2 -2h4a2 2 0 0 1 2 2v9a2 2 0 0 1 -2 2h-4a2 2 0 0 1 -2 -2v-9z" />
                 <path d="M9 16h6" />
@@ -71,8 +71,8 @@ const Login = () => {
                 <path d="M18 7v-4" />
               </svg>
             </div>
-            <h2 className="mt-4 text-3xl font-bold text-farm-green">FarmCare Login</h2>
-            <p className="mt-2 text-gray-600 dark:text-gray-400 font-medium">Sign in to manage your farm</p>
+            <h2 className="mt-4 text-3xl font-extrabold text-farm-green">FarmCare Login</h2>
+            <p className="mt-2 text-gray-600 dark:text-gray-400 font-semibold">Sign in to manage your farm</p>
           </div>
 
           <Form {...form}>
@@ -83,15 +83,15 @@ const Login = () => {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-gray-700 dark:text-gray-300 font-medium">Email</FormLabel>
+                      <FormLabel className="text-gray-700 dark:text-gray-300 font-semibold">Username</FormLabel>
                       <FormControl>
                         <Input 
-                          placeholder="email@example.com" 
+                          placeholder="Enter your username" 
                           {...field} 
-                          className="border-2 border-farm-green/20 focus:border-farm-green/50 bg-white dark:bg-gray-900"
+                          className="border-3 border-farm-green/40 focus:border-farm-green bg-white dark:bg-gray-900"
                         />
                       </FormControl>
-                      <FormMessage className="text-red-600" />
+                      <FormMessage className="text-red-600 font-medium" />
                     </FormItem>
                   )}
                 />
@@ -101,16 +101,16 @@ const Login = () => {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-gray-700 dark:text-gray-300 font-medium">Password</FormLabel>
+                      <FormLabel className="text-gray-700 dark:text-gray-300 font-semibold">Password</FormLabel>
                       <FormControl>
                         <Input 
                           type="password" 
                           placeholder="••••••" 
                           {...field} 
-                          className="border-2 border-farm-green/20 focus:border-farm-green/50 bg-white dark:bg-gray-900"
+                          className="border-3 border-farm-green/40 focus:border-farm-green bg-white dark:bg-gray-900"
                         />
                       </FormControl>
-                      <FormMessage className="text-red-600" />
+                      <FormMessage className="text-red-600 font-medium" />
                     </FormItem>
                   )}
                 />
@@ -118,7 +118,7 @@ const Login = () => {
 
               <Button
                 type="submit"
-                className="w-full bg-farm-green hover:bg-farm-green/90 text-white font-bold py-3 shadow-md hover:shadow-lg transition-all"
+                className="w-full bg-farm-green hover:bg-farm-green/90 text-white font-bold py-3 shadow-md hover:shadow-lg transition-all text-lg"
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -132,7 +132,7 @@ const Login = () => {
               </Button>
 
               <div className="text-center text-sm mt-4">
-                <p>
+                <p className="font-medium">
                   Don't have an account?{" "}
                   <Link to="/register" className="text-farm-green font-bold hover:underline">
                     Register

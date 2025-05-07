@@ -18,7 +18,7 @@ import { useAuth } from "@/context/AuthContext";
 
 const registerFormSchema = z
   .object({
-    name: z.string().min(2, { message: "Name must be at least 2 characters" }),
+    name: z.string().min(3, { message: "Username must be at least 3 characters" }),
     email: z.string().email({ message: "Please enter a valid email address" }),
     password: z
       .string()
@@ -48,7 +48,7 @@ const Register = () => {
   const onSubmit = async (values: RegisterFormValues) => {
     try {
       await registerUser({
-        name: values.name,
+        name: values.name, // This will be mapped to userName in the API service
         email: values.email,
         password: values.password
       });
@@ -61,7 +61,7 @@ const Register = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background farm-pattern px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-8 animate-fade-in">
-        <div className="bg-white dark:bg-gray-800 shadow-xl rounded-lg p-8 border-2 border-farm-green/20">
+        <div className="bg-white dark:bg-gray-800 shadow-xl rounded-lg p-8 border-4 border-farm-green">
           <div className="text-center">
             <div className="flex items-center justify-center">
               <svg
@@ -74,7 +74,7 @@ const Register = () => {
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="h-14 w-14 text-farm-green"
+                className="h-16 w-16 text-farm-green"
               >
                 <path d="M3 9a2 2 0 0 1 2 -2h4a2 2 0 0 1 2 2v9a2 2 0 0 1 -2 2h-4a2 2 0 0 1 -2 -2v-9z" />
                 <path d="M9 16h6" />
@@ -83,8 +83,8 @@ const Register = () => {
                 <path d="M18 7v-4" />
               </svg>
             </div>
-            <h2 className="mt-4 text-3xl font-bold text-farm-green">Create Account</h2>
-            <p className="mt-2 text-gray-600 dark:text-gray-400 font-medium">Sign up to start managing your farm</p>
+            <h2 className="mt-4 text-3xl font-extrabold text-farm-green">Create Account</h2>
+            <p className="mt-2 text-gray-600 dark:text-gray-400 font-semibold">Sign up to start managing your farm</p>
           </div>
 
           <Form {...form}>
@@ -95,15 +95,15 @@ const Register = () => {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-gray-700 dark:text-gray-300 font-medium">Full Name</FormLabel>
+                      <FormLabel className="text-gray-700 dark:text-gray-300 font-semibold">Username</FormLabel>
                       <FormControl>
                         <Input 
-                          placeholder="John Doe" 
+                          placeholder="Enter username" 
                           {...field} 
-                          className="border-2 border-farm-green/20 focus:border-farm-green/50 bg-white dark:bg-gray-900"
+                          className="border-3 border-farm-green/40 focus:border-farm-green bg-white dark:bg-gray-900"
                         />
                       </FormControl>
-                      <FormMessage className="text-red-600" />
+                      <FormMessage className="text-red-600 font-medium" />
                     </FormItem>
                   )}
                 />
@@ -113,15 +113,15 @@ const Register = () => {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-gray-700 dark:text-gray-300 font-medium">Email</FormLabel>
+                      <FormLabel className="text-gray-700 dark:text-gray-300 font-semibold">Email</FormLabel>
                       <FormControl>
                         <Input 
                           placeholder="email@example.com" 
                           {...field} 
-                          className="border-2 border-farm-green/20 focus:border-farm-green/50 bg-white dark:bg-gray-900"
+                          className="border-3 border-farm-green/40 focus:border-farm-green bg-white dark:bg-gray-900"
                         />
                       </FormControl>
-                      <FormMessage className="text-red-600" />
+                      <FormMessage className="text-red-600 font-medium" />
                     </FormItem>
                   )}
                 />
@@ -131,16 +131,16 @@ const Register = () => {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-gray-700 dark:text-gray-300 font-medium">Password</FormLabel>
+                      <FormLabel className="text-gray-700 dark:text-gray-300 font-semibold">Password</FormLabel>
                       <FormControl>
                         <Input 
                           type="password" 
                           placeholder="••••••" 
                           {...field} 
-                          className="border-2 border-farm-green/20 focus:border-farm-green/50 bg-white dark:bg-gray-900"
+                          className="border-3 border-farm-green/40 focus:border-farm-green bg-white dark:bg-gray-900"
                         />
                       </FormControl>
-                      <FormMessage className="text-red-600" />
+                      <FormMessage className="text-red-600 font-medium" />
                     </FormItem>
                   )}
                 />
@@ -150,16 +150,16 @@ const Register = () => {
                   name="confirmPassword"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-gray-700 dark:text-gray-300 font-medium">Confirm Password</FormLabel>
+                      <FormLabel className="text-gray-700 dark:text-gray-300 font-semibold">Confirm Password</FormLabel>
                       <FormControl>
                         <Input 
                           type="password" 
                           placeholder="••••••" 
                           {...field} 
-                          className="border-2 border-farm-green/20 focus:border-farm-green/50 bg-white dark:bg-gray-900"
+                          className="border-3 border-farm-green/40 focus:border-farm-green bg-white dark:bg-gray-900" 
                         />
                       </FormControl>
-                      <FormMessage className="text-red-600" />
+                      <FormMessage className="text-red-600 font-medium" />
                     </FormItem>
                   )}
                 />
@@ -167,7 +167,7 @@ const Register = () => {
 
               <Button
                 type="submit"
-                className="w-full bg-farm-green hover:bg-farm-green/90 text-white font-bold py-3 shadow-md hover:shadow-lg transition-all"
+                className="w-full bg-farm-green hover:bg-farm-green/90 text-white font-bold py-3 shadow-md hover:shadow-lg transition-all text-lg"
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -181,7 +181,7 @@ const Register = () => {
               </Button>
 
               <div className="text-center text-sm mt-4">
-                <p>
+                <p className="font-medium">
                   Already have an account?{" "}
                   <Link to="/login" className="text-farm-green font-bold hover:underline">
                     Sign in
