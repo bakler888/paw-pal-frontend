@@ -1,292 +1,283 @@
+
 import React from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { getAllAnimals, getAllCareTools } from "@/services/api";
-import { PiggyBank, AlertTriangle, BarChart3 } from "lucide-react";
-import { useAuth } from "@/context/AuthContext";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  CircleDollarSign,
+  HelpCircle,
+  Package2,
+  ShoppingCart,
+} from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
+
+interface Animal {
+  animalID: number;
+  name: string;
+  animalPrice: number;
+  animalcount?: number;
+  description?: string;
+  buyorsale: string | number;
+  dateOfbuyorsale?: string;
+  animalCares?: string[];
+}
+
+interface CareToolItem {
+  id?: number;
+  name: string;
+  price: number;
+  count?: number;
+  description?: string;
+}
 
 const Dashboard = () => {
-  const { user } = useAuth();
-
-  const { data: animals, isLoading: animalsLoading, error: animalsError } = useQuery({
+  const { data: animals = [], isLoading: animalsLoading } = useQuery({
     queryKey: ["animals"],
     queryFn: getAllAnimals,
-    meta: {
-      onError: (error: any) => {
-        console.error("Error fetching animals:", error);
-      }
-    }
   });
 
-  const { data: tools, isLoading: toolsLoading, error: toolsError } = useQuery({
+  const { data: careTools = [], isLoading: toolsLoading } = useQuery({
     queryKey: ["careTools"],
     queryFn: getAllCareTools,
-    meta: {
-      onError: (error: any) => {
-        console.error("Error fetching care tools:", error);
-      }
-    }
   });
 
-  // Calculate animals with health issues - safely handle undefined values
-  const animalsWithHealthIssues = animals 
-    ? animals.filter((animal) => 
-        animal?.healthStatus && animal?.healthStatus?.toLowerCase() !== "healthy"
-      ).length
-    : 0;
+  // Calculate dashboard metrics
+  const totalAnimals = animals.length;
+  const purchaseAnimals = animals.filter((animal) => 
+    animal.buyorsale?.toString()?.toLowerCase() === "buy"
+  ).length;
+  const saleAnimals = totalAnimals - purchaseAnimals;
 
-  // Calculate tools that need maintenance - safely handle undefined values
-  const toolsNeedingMaintenance = tools 
-    ? tools.filter((tool) => 
-        tool?.condition && tool?.condition?.toLowerCase() !== "good"
-      ).length
-    : 0;
+  const totalTools = careTools.length;
+  const goodConditionTools = careTools.length; // Adjust if you have condition data
+  const needsAttentionTools = 0; // Adjust if you have condition data
+
+  // Calculate financial metrics
+  const animalInvestment = animals.reduce(
+    (sum, animal) => sum + (animal.animalPrice * (animal.animalcount || 1)),
+    0
+  );
+  const toolsInvestment = careTools.reduce(
+    (sum, tool) => sum + (tool.price * (tool.count || 1)),
+    0
+  );
+  const totalInvestment = animalInvestment + toolsInvestment;
+
+  // Get recent animals and tools
+  const recentAnimals = [...animals]
+    .sort((a, b) => {
+      const dateA = a.dateOfbuyorsale ? new Date(a.dateOfbuyorsale).getTime() : 0;
+      const dateB = b.dateOfbuyorsale ? new Date(b.dateOfbuyorsale).getTime() : 0;
+      return dateB - dateA;
+    })
+    .slice(0, 3);
+
+  const recentTools = [...careTools].slice(0, 3);
+
+  if (animalsLoading || toolsLoading) {
+    return (
+      <div className="flex justify-center py-12">
+        <div className="loader"></div>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-8">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-          Welcome, {user?.name || "User"}
-        </h1>
-        <div className="flex space-x-2">
-          <Button className="bg-farm-green hover:bg-farm-green/90">
-            <Link to="/animals/add">Add Animal</Link>
-          </Button>
-          <Button className="bg-farm-brown hover:bg-farm-brown/90">
-            <Link to="/care-tools/add">Add Tool</Link>
-          </Button>
-        </div>
-      </div>
+    <div className="space-y-6">
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+        Dashboard
+      </h1>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Total Animals Card */}
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Animals
-            </CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between py-4">
+            <CardTitle className="text-sm font-medium">Total Animals</CardTitle>
+            <Package2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-between">
-              <div className="text-3xl font-bold">
-                {animalsLoading ? "-" : (animals?.length || 0)}
-              </div>
-              <PiggyBank className="h-8 w-8 text-farm-green" />
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">
-              Manage your farm animals
+            <div className="text-2xl font-bold">{totalAnimals}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {purchaseAnimals} purchases, {saleAnimals} sales
             </p>
+            <Progress
+              value={(purchaseAnimals / (totalAnimals || 1)) * 100}
+              className="mt-3 h-1"
+            />
           </CardContent>
         </Card>
 
+        {/* Total Tools Card */}
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Care Tools
-            </CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between py-4">
+            <CardTitle className="text-sm font-medium">Care Tools</CardTitle>
+            <ShoppingCart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-between">
-              <div className="text-3xl font-bold">
-                {toolsLoading ? "-" : tools?.length || 0}
-              </div>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24" 
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="h-8 w-8 text-farm-brown"
-              >
-                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
-              </svg>
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">
-              Tools in your inventory
+            <div className="text-2xl font-bold">{totalTools}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {goodConditionTools} in stock
             </p>
+            <Progress
+              value={(goodConditionTools / (totalTools || 1)) * 100}
+              className="mt-3 h-1"
+            />
           </CardContent>
         </Card>
 
+        {/* Total Investment Card */}
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Health Alerts
+          <CardHeader className="flex flex-row items-center justify-between py-4">
+            <CardTitle className="text-sm font-medium">
+              Total Investment
             </CardTitle>
+            <CircleDollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-between">
-              <div className="text-3xl font-bold">
-                {animalsLoading ? "-" : animalsWithHealthIssues}
-              </div>
-              <AlertTriangle className="h-8 w-8 text-yellow-500" />
+            <div className="text-2xl font-bold">
+              ${totalInvestment.toFixed(2)}
             </div>
-            <p className="text-xs text-muted-foreground mt-2">
-              Animals need attention
+            <p className="text-xs text-muted-foreground mt-1">
+              ${animalInvestment.toFixed(2)} in animals,{" "}
+              ${toolsInvestment.toFixed(2)} in tools
             </p>
+            <Progress
+              value={(animalInvestment / (totalInvestment || 1)) * 100}
+              className="mt-3 h-1"
+            />
           </CardContent>
         </Card>
 
+        {/* Care Needs Card */}
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Maintenance Needed
-            </CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between py-4">
+            <CardTitle className="text-sm font-medium">Care Needs</CardTitle>
+            <HelpCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-between">
-              <div className="text-3xl font-bold">
-                {toolsLoading ? "-" : toolsNeedingMaintenance}
-              </div>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24" 
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="h-8 w-8 text-orange-500"
-              >
-                <rect x="3" y="3" width="18" height="18" rx="2" />
-                <circle cx="9" cy="9" r="2" />
-                <path d="M13 9h4" />
-                <path d="M13 15h4" />
-                <path d="M9 15h.01" />
-              </svg>
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">
-              Tools need maintenance
+            <div className="text-2xl font-bold">{needsAttentionTools}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Tools needing attention
             </p>
+            <Progress
+              value={
+                ((totalTools - needsAttentionTools) / (totalTools || 1)) * 100
+              }
+              className="mt-3 h-1"
+            />
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle>Recent Animals</CardTitle>
-            </div>
-            <Button variant="outline" size="sm">
+      {/* Recent Animals */}
+      <Card>
+        <CardHeader className="py-4">
+          <div className="flex items-center justify-between">
+            <CardTitle>Recent Animals</CardTitle>
+            <Button variant="outline" size="sm" asChild>
               <Link to="/animals">View All</Link>
             </Button>
-          </CardHeader>
-          <CardContent>
-            {animalsLoading ? (
-              <div className="flex justify-center py-8">
-                <div className="loader"></div>
-              </div>
-            ) : animalsError ? (
-              <div className="text-center py-8">
-                <p className="text-red-500">Error loading animals</p>
-                <Button className="mt-4 bg-farm-green hover:bg-farm-green/90">
-                  <Link to="/animals/add">Add Animal</Link>
-                </Button>
-              </div>
-            ) : animals && animals.length > 0 ? (
-              <div className="space-y-4">
-                {animals.slice(0, 5).map((animal) => (
-                  <div
-                    key={animal.id}
-                    className="flex items-center justify-between p-3 bg-muted rounded-md"
-                  >
-                    <div>
-                      <p className="font-medium">{animal.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {animal.breed}, {animal.age} years
-                      </p>
-                    </div>
-                    <div>
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          animal.healthStatus?.toLowerCase() === "healthy"
-                            ? "bg-green-100 text-green-800"
-                            : "bg-yellow-100 text-yellow-800"
-                        }`}
-                      >
-                        {animal.healthStatus || "Unknown"}
-                      </span>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {recentAnimals.length > 0 ? (
+            <div className="space-y-4">
+              {recentAnimals.map((animal) => (
+                <div
+                  key={animal.animalID}
+                  className="flex items-center justify-between border-b pb-2 last:border-0"
+                >
+                  <div>
+                    <div className="font-medium">{animal.name}</div>
+                    <div className="text-sm text-muted-foreground">
+                      Type: {animal.buyorsale?.toString() === "buy" ? "Purchase" : "Sale"} | Count: {animal.animalcount || 1}
                     </div>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <p className="text-muted-foreground">No animals added yet</p>
-                <Button className="mt-4 bg-farm-green hover:bg-farm-green/90">
-                  <Link to="/animals/add">Add Animal</Link>
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle>Recent Care Tools</CardTitle>
+                  <div className="flex items-center">
+                    <div
+                      className={`px-2 py-1 rounded-full text-xs ${
+                        animal.buyorsale?.toString()?.toLowerCase() === "buy"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-yellow-100 text-yellow-800"
+                      }`}
+                    >
+                      {animal.buyorsale?.toString()?.toLowerCase() === "buy" ? "Buy" : "Sale"}
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="ml-2"
+                      asChild
+                    >
+                      <Link to={`/animals/${animal.animalID}`}>View</Link>
+                    </Button>
+                  </div>
+                </div>
+              ))}
             </div>
-            <Button variant="outline" size="sm">
+          ) : (
+            <div className="text-center py-6 text-muted-foreground">
+              <p>No animals added yet</p>
+              <Button className="mt-2" asChild>
+                <Link to="/animals/add">Add Animal</Link>
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Recent Tools */}
+      <Card>
+        <CardHeader className="py-4">
+          <div className="flex items-center justify-between">
+            <CardTitle>Recent Tools</CardTitle>
+            <Button variant="outline" size="sm" asChild>
               <Link to="/care-tools">View All</Link>
             </Button>
-          </CardHeader>
-          <CardContent>
-            {toolsLoading ? (
-              <div className="flex justify-center py-8">
-                <div className="loader"></div>
-              </div>
-            ) : toolsError ? (
-              <div className="text-center py-8">
-                <p className="text-red-500">Error loading care tools</p>
-                <Button className="mt-4 bg-farm-brown hover:bg-farm-brown/90">
-                  <Link to="/care-tools/add">Add Tool</Link>
-                </Button>
-              </div>
-            ) : tools && tools.length > 0 ? (
-              <div className="space-y-4">
-                {tools.slice(0, 5).map((tool) => (
-                  <div
-                    key={tool.id}
-                    className="flex items-center justify-between p-3 bg-muted rounded-md"
-                  >
-                    <div>
-                      <p className="font-medium">{tool.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {tool.purpose}
-                      </p>
-                    </div>
-                    <div>
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          tool.condition?.toLowerCase() === "good"
-                            ? "bg-green-100 text-green-800"
-                            : "bg-orange-100 text-orange-800"
-                        }`}
-                      >
-                        {tool.condition || "Unknown"}
-                      </span>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {recentTools.length > 0 ? (
+            <div className="space-y-4">
+              {recentTools.map((tool) => (
+                <div
+                  key={tool.id}
+                  className="flex items-center justify-between border-b pb-2 last:border-0"
+                >
+                  <div>
+                    <div className="font-medium">{tool.name}</div>
+                    <div className="text-sm text-muted-foreground">
+                      Price: ${tool.price} | Count: {tool.count || 1}
                     </div>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <p className="text-muted-foreground">No care tools added yet</p>
-                <Button className="mt-4 bg-farm-brown hover:bg-farm-brown/90">
-                  <Link to="/care-tools/add">Add Tool</Link>
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+                  <div>
+                    <div className="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
+                      Tool
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="ml-2"
+                      asChild
+                    >
+                      <Link to={`/care-tools/${tool.id}`}>View</Link>
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-6 text-muted-foreground">
+              <p>No care tools added yet</p>
+              <Button className="mt-2" asChild>
+                <Link to="/care-tools/add">Add Care Tool</Link>
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };

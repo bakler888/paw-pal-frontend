@@ -18,6 +18,17 @@ import {
 } from "@/components/ui/alert-dialog";
 import { ArrowLeft, Pencil, Trash2, CheckCircle, AlertTriangle } from "lucide-react";
 
+interface Animal {
+  animalID: number;
+  name: string;
+  animalPrice: number;
+  animalcount?: number;
+  description?: string;
+  buyorsale: string | number;
+  dateOfbuyorsale?: string;
+  animalCares?: string[];
+}
+
 const AnimalDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -53,7 +64,7 @@ const AnimalDetails = () => {
     }
   };
 
-  const isHealthy = animal?.healthStatus.toLowerCase() === "healthy";
+  const isBuying = animal?.buyorsale?.toString()?.toLowerCase() === "buy";
 
   if (isLoading) {
     return (
@@ -93,19 +104,19 @@ const AnimalDetails = () => {
             <div>
               <div className="flex items-center gap-3">
                 <h2 className="text-2xl font-bold">{animal.name}</h2>
-                {isHealthy ? (
+                {isBuying ? (
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                     <CheckCircle className="h-3.5 w-3.5 mr-1" />
-                    Healthy
+                    Buy
                   </span>
                 ) : (
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
                     <AlertTriangle className="h-3.5 w-3.5 mr-1" />
-                    {animal.healthStatus}
+                    Sale
                   </span>
                 )}
               </div>
-              <p className="text-muted-foreground mt-1">{animal.breed}</p>
+              <p className="text-muted-foreground mt-1">Type: {isBuying ? 'Purchase' : 'Sale'}</p>
             </div>
             <div className="flex gap-2">
               <Button
@@ -121,7 +132,7 @@ const AnimalDetails = () => {
                 className="bg-farm-green hover:bg-farm-green/90"
                 asChild
               >
-                <Link to={`/animals/edit/${animal.id}`}>
+                <Link to={`/animals/edit/${animal.animalID}`}>
                   <Pencil className="h-4 w-4 mr-1" />
                   Edit
                 </Link>
@@ -134,31 +145,39 @@ const AnimalDetails = () => {
               <h3 className="font-medium">Details</h3>
               <div className="space-y-2">
                 <div className="flex justify-between border-b pb-2">
-                  <span className="text-muted-foreground">Age</span>
-                  <span className="font-medium">{animal.age} years</span>
+                  <span className="text-muted-foreground">Count</span>
+                  <span className="font-medium">{animal.animalcount || 1}</span>
                 </div>
                 <div className="flex justify-between border-b pb-2">
-                  <span className="text-muted-foreground">Weight</span>
-                  <span className="font-medium">{animal.weight} kg</span>
+                  <span className="text-muted-foreground">Price</span>
+                  <span className="font-medium">{animal.animalPrice} $</span>
                 </div>
                 <div className="flex justify-between border-b pb-2">
-                  <span className="text-muted-foreground">Health Status</span>
+                  <span className="text-muted-foreground">Status</span>
                   <span
                     className={`font-medium ${
-                      isHealthy ? "text-green-600" : "text-yellow-600"
+                      isBuying ? "text-green-600" : "text-yellow-600"
                     }`}
                   >
-                    {animal.healthStatus}
+                    {isBuying ? "Buy" : "Sale"}
                   </span>
                 </div>
+                {animal.dateOfbuyorsale && (
+                  <div className="flex justify-between border-b pb-2">
+                    <span className="text-muted-foreground">Date</span>
+                    <span className="font-medium">
+                      {new Date(animal.dateOfbuyorsale).toLocaleDateString()}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 
-            {animal.notes && (
+            {animal.description && (
               <div className="space-y-4">
-                <h3 className="font-medium">Notes</h3>
+                <h3 className="font-medium">Description</h3>
                 <div className="bg-muted p-4 rounded-md text-sm">
-                  {animal.notes}
+                  {animal.description}
                 </div>
               </div>
             )}

@@ -6,13 +6,14 @@ import { Button } from "@/components/ui/button";
 import { AlertTriangle, CheckCircle } from "lucide-react";
 
 interface Animal {
-  id: number;
+  animalID: number;  // Changed from id to animalID
   name: string;
-  breed: string;
-  age: number;
-  weight: number;
-  healthStatus: string;
-  notes?: string;
+  animalPrice: number;
+  animalcount?: number;
+  description?: string;
+  buyorsale: string | number;
+  dateOfbuyorsale?: string;
+  animalCares?: string[];
 }
 
 interface AnimalCardProps {
@@ -21,7 +22,9 @@ interface AnimalCardProps {
 }
 
 const AnimalCard = ({ animal, onDelete }: AnimalCardProps) => {
-  const isHealthy = animal.healthStatus.toLowerCase() === "healthy";
+  // Default to "Unknown" if healthStatus doesn't exist
+  // We'll use a display name based on buyorsale value instead
+  const isBuying = animal.buyorsale?.toString()?.toLowerCase() === "buy";
 
   return (
     <Card className="overflow-hidden">
@@ -29,7 +32,7 @@ const AnimalCard = ({ animal, onDelete }: AnimalCardProps) => {
         <div className="p-6">
           <div className="flex justify-between items-start mb-3">
             <h3 className="text-lg font-semibold">{animal.name}</h3>
-            {isHealthy ? (
+            {isBuying ? (
               <CheckCircle className="h-5 w-5 text-green-500" />
             ) : (
               <AlertTriangle className="h-5 w-5 text-yellow-500" />
@@ -38,25 +41,27 @@ const AnimalCard = ({ animal, onDelete }: AnimalCardProps) => {
           
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Breed:</span>
-              <span className="font-medium">{animal.breed}</span>
+              <span className="text-muted-foreground">Type:</span>
+              <span className="font-medium">
+                {isBuying ? "Purchase" : "Sale"}
+              </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Age:</span>
-              <span className="font-medium">{animal.age} years</span>
+              <span className="text-muted-foreground">Price:</span>
+              <span className="font-medium">{animal.animalPrice} $</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Weight:</span>
-              <span className="font-medium">{animal.weight} kg</span>
+              <span className="text-muted-foreground">Count:</span>
+              <span className="font-medium">{animal.animalcount || 1}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Health:</span>
+              <span className="text-muted-foreground">Status:</span>
               <span
                 className={`font-medium ${
-                  isHealthy ? "text-green-600" : "text-yellow-600"
+                  isBuying ? "text-green-600" : "text-yellow-600"
                 }`}
               >
-                {animal.healthStatus}
+                {isBuying ? "Buy" : "Sale"}
               </span>
             </div>
           </div>
@@ -66,16 +71,16 @@ const AnimalCard = ({ animal, onDelete }: AnimalCardProps) => {
         <Button
           variant="destructive"
           size="sm"
-          onClick={() => onDelete(animal.id)}
+          onClick={() => onDelete(animal.animalID)}
         >
           Delete
         </Button>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" asChild>
-            <Link to={`/animals/${animal.id}`}>View</Link>
+            <Link to={`/animals/${animal.animalID}`}>View</Link>
           </Button>
           <Button size="sm" className="bg-farm-green hover:bg-farm-green/90" asChild>
-            <Link to={`/animals/edit/${animal.id}`}>Edit</Link>
+            <Link to={`/animals/edit/${animal.animalID}`}>Edit</Link>
           </Button>
         </div>
       </CardFooter>

@@ -20,13 +20,14 @@ import {
 import { Plus, Search } from "lucide-react";
 
 interface Animal {
-  id: number;
+  animalID: number;
   name: string;
-  breed: string;
-  age: number;
-  weight: number;
-  healthStatus: string;
-  notes?: string;
+  animalPrice: number;
+  animalcount?: number;
+  description?: string;
+  buyorsale: string | number;
+  dateOfbuyorsale?: string;
+  animalCares?: string[];
 }
 
 const Animals = () => {
@@ -69,8 +70,8 @@ const Animals = () => {
     const searchTermLower = searchTerm.toLowerCase();
     return (
       animal.name.toLowerCase().includes(searchTermLower) ||
-      animal.breed.toLowerCase().includes(searchTermLower) ||
-      animal.healthStatus.toLowerCase().includes(searchTermLower)
+      animal.description?.toLowerCase().includes(searchTermLower) ||
+      animal.buyorsale?.toString().toLowerCase().includes(searchTermLower)
     );
   });
 
@@ -104,7 +105,7 @@ const Animals = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredAnimals.map((animal) => (
             <AnimalCard
-              key={animal.id}
+              key={animal.animalID}
               animal={animal}
               onDelete={handleDeleteAnimal}
             />
