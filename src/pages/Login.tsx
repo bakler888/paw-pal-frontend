@@ -15,9 +15,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
+import { toast } from "sonner";
 
 const loginFormSchema = z.object({
-  email: z.string().min(3, { message: "Username or email must be at least 3 characters" }),
+  email: z.string().min(3, { message: "Username must be at least 3 characters" }),
   password: z.string().min(6, { message: "Password must be at least 6 characters" }),
 });
 
@@ -37,12 +38,13 @@ const Login = () => {
   const onSubmit = async (values: LoginFormValues) => {
     try {
       await login({
-        email: values.email, // We'll handle the conversion in the API service
+        email: values.email,
         password: values.password
       });
     } catch (error) {
       console.error("Login failed:", error);
-      // Error is handled by API service
+      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred. Please try again.";
+      toast.error(errorMessage);
     }
   };
 

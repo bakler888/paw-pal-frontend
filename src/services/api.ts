@@ -38,6 +38,23 @@ interface CareToolItem {
 // Helper function to handle API responses
 const handleResponse = async (response: Response) => {
   if (!response.ok) {
+    if (response.status === 400) {
+      const errorData = await response.json().catch(() => ({ message: "Invalid request data" }));
+      throw new Error(errorData.message || "Invalid request data");
+    }
+    if (response.status === 401) {
+      throw new Error("Invalid username or password");
+    }
+    if (response.status === 404) {
+      throw new Error("Resource not found");
+    }
+    if (response.status === 409) {
+      throw new Error("User already exists with this email or username");
+    }
+    if (response.status >= 500) {
+      throw new Error("Server error. Please try again later.");
+    }
+    
     const errorData = await response.json().catch(() => ({ message: "An unknown error occurred" }));
     throw new Error(errorData.message || "Failed to process request");
   }
@@ -53,6 +70,8 @@ export const login = async (credentials: { email: string, password: string }) =>
       password: credentials.password,
     };
     
+    console.log("Sending login request with:", JSON.stringify(loginRequest));
+    
     const response = await fetch(`${API_URL}/Auth/login`, {
       method: "POST",
       headers: {
@@ -62,6 +81,8 @@ export const login = async (credentials: { email: string, password: string }) =>
     });
     
     const data = await handleResponse(response);
+    console.log("Login response:", JSON.stringify(data));
+    
     // Store token
     localStorage.setItem("token", data.token);
     localStorage.setItem("user", JSON.stringify({
@@ -87,6 +108,8 @@ export const register = async (userData: { name: string, email: string, password
       role: "User" // Default role
     };
     
+    console.log("Sending register request with:", JSON.stringify(registerRequest));
+    
     const response = await fetch(`${API_URL}/Auth/register`, {
       method: "POST",
       headers: {
@@ -95,7 +118,9 @@ export const register = async (userData: { name: string, email: string, password
       body: JSON.stringify(registerRequest),
     });
     
-    return await handleResponse(response);
+    const data = await handleResponse(response);
+    console.log("Register response:", JSON.stringify(data));
+    return data;
   } catch (error) {
     console.error("Register error:", error);
     toast.error(error instanceof Error ? error.message : "Failed to register");

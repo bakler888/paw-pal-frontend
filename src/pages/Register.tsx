@@ -15,6 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
+import { toast } from "sonner";
 
 const registerFormSchema = z
   .object({
@@ -48,13 +49,14 @@ const Register = () => {
   const onSubmit = async (values: RegisterFormValues) => {
     try {
       await registerUser({
-        name: values.name, // This will be mapped to userName in the API service
+        name: values.name,
         email: values.email,
         password: values.password
       });
     } catch (error) {
       console.error("Registration failed:", error);
-      // Error is handled by API service
+      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred. Please try again.";
+      toast.error(errorMessage);
     }
   };
 
