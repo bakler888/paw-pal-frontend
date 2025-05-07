@@ -23,9 +23,11 @@ import {
 
 const animalFormSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
+  species: z.string().min(1, { message: "Species is required" }),
   breed: z.string().min(1, { message: "Breed is required" }),
-  age: z.string().transform((val) => Number(val)),
-  weight: z.string().transform((val) => Number(val)),
+  age: z.string()
+    .min(1, { message: "Age is required" })
+    .transform((val) => Number(val)),
   healthStatus: z.string().min(1, { message: "Health status is required" }),
   notes: z.string().optional(),
 });
@@ -35,9 +37,9 @@ type AnimalFormValues = z.infer<typeof animalFormSchema>;
 interface AnimalFormProps {
   initialValues?: {
     name: string;
+    species: string;
     breed: string;
     age: number;
-    weight: number;
     healthStatus: string;
     notes?: string;
   };
@@ -50,18 +52,26 @@ const AnimalForm = ({
   onSubmit,
   isSubmitting,
 }: AnimalFormProps) => {
-  // Fix the type issue by handling age and weight as numbers in defaultValues
+  // Transform the age to a string for the form
   const form = useForm<AnimalFormValues>({
     resolver: zodResolver(animalFormSchema),
     defaultValues: {
       name: initialValues?.name || "",
+      species: initialValues?.species || "",
       breed: initialValues?.breed || "",
-      age: initialValues ? String(initialValues.age) : "0",
-      weight: initialValues ? String(initialValues.weight) : "0",
+      age: initialValues ? String(initialValues.age) : "",
       healthStatus: initialValues?.healthStatus || "Healthy",
       notes: initialValues?.notes || "",
     },
   });
+
+  // Handle form submission and convert age back to number
+  const handleSubmit = (values: AnimalFormValues) => {
+    onSubmit({
+      ...values,
+      age: Number(values.age),
+    });
+  };
 
   return (
     <Form {...form}>
@@ -72,9 +82,23 @@ const AnimalForm = ({
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Name</FormLabel>
+                <FormLabel>Animal Name</FormLabel>
                 <FormControl>
                   <Input placeholder="Animal name" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="species"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Species</FormLabel>
+                <FormControl>
+                  <Input placeholder="Species" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -105,27 +129,8 @@ const AnimalForm = ({
                   <Input
                     type="number"
                     min="0"
-                    placeholder="Age in years"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="weight"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Weight (kg)</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    min="0"
                     step="0.1"
-                    placeholder="Weight in kg"
+                    placeholder="Age in years"
                     {...field}
                   />
                 </FormControl>
@@ -151,10 +156,9 @@ const AnimalForm = ({
                   </FormControl>
                   <SelectContent>
                     <SelectItem value="Healthy">Healthy</SelectItem>
-                    <SelectItem value="Sick">Sick</SelectItem>
-                    <SelectItem value="Injured">Injured</SelectItem>
-                    <SelectItem value="Under Treatment">Under Treatment</SelectItem>
-                    <SelectItem value="Recovering">Recovering</SelectItem>
+                    <SelectItem value="Minor Issues">Minor Issues</SelectItem>
+                    <SelectItem value="Needs Attention">Needs Attention</SelectItem>
+                    <SelectItem value="Critical">Critical</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />

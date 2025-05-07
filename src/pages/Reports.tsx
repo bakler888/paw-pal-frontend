@@ -22,7 +22,7 @@ const Reports = () => {
     
     const statusCounts: {[key: string]: number} = {};
     animals.forEach((animal) => {
-      const status = animal.healthStatus;
+      const status = animal.healthStatus || "Unknown";
       statusCounts[status] = (statusCounts[status] || 0) + 1;
     });
     
@@ -38,7 +38,7 @@ const Reports = () => {
     
     const conditionCounts: {[key: string]: number} = {};
     tools.forEach((tool) => {
-      const condition = tool.condition;
+      const condition = tool.condition || "Unknown";
       conditionCounts[condition] = (conditionCounts[condition] || 0) + 1;
     });
     
@@ -53,6 +53,22 @@ const Reports = () => {
   
   const healthStatusData = getHealthStatusData();
   const toolConditionData = getToolConditionData();
+
+  // Safely get count of healthy animals with null checks
+  const getHealthyAnimalCount = () => {
+    if (!animals || animals.length === 0) return 0;
+    return animals.filter((animal) => 
+      animal.healthStatus && animal.healthStatus.toLowerCase() === "healthy"
+    ).length;
+  };
+
+  // Safely get count of tools needing attention with null checks
+  const getToolsNeedingAttentionCount = () => {
+    if (!tools || tools.length === 0) return 0;
+    return tools.filter((tool) => 
+      tool.condition && tool.condition.toLowerCase() !== "good"
+    ).length;
+  };
 
   return (
     <div className="space-y-6">
@@ -142,7 +158,7 @@ const Reports = () => {
             <div className="bg-muted p-4 rounded-md">
               <p className="text-muted-foreground text-sm">Healthy Animals</p>
               <p className="text-2xl font-bold text-farm-green">
-                {animals?.filter((a) => a.healthStatus.toLowerCase() === "healthy").length || 0}
+                {getHealthyAnimalCount()}
               </p>
             </div>
             <div className="bg-muted p-4 rounded-md">
@@ -152,7 +168,7 @@ const Reports = () => {
             <div className="bg-muted p-4 rounded-md">
               <p className="text-muted-foreground text-sm">Tools Needing Attention</p>
               <p className="text-2xl font-bold text-orange-500">
-                {tools?.filter((t) => t.condition.toLowerCase() !== "good").length || 0}
+                {getToolsNeedingAttentionCount()}
               </p>
             </div>
           </div>

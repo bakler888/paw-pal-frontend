@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -14,30 +13,34 @@ const Dashboard = () => {
   const { data: animals, isLoading: animalsLoading, error: animalsError } = useQuery({
     queryKey: ["animals"],
     queryFn: getAllAnimals,
-    onError: (error) => {
-      console.error("Error fetching animals:", error);
+    meta: {
+      onError: (error: any) => {
+        console.error("Error fetching animals:", error);
+      }
     }
   });
 
   const { data: tools, isLoading: toolsLoading, error: toolsError } = useQuery({
     queryKey: ["careTools"],
     queryFn: getAllCareTools,
-    onError: (error) => {
-      console.error("Error fetching care tools:", error);
+    meta: {
+      onError: (error: any) => {
+        console.error("Error fetching care tools:", error);
+      }
     }
   });
 
   // Calculate animals with health issues - safely handle undefined values
   const animalsWithHealthIssues = animals 
     ? animals.filter((animal) => 
-        animal?.healthStatus?.toLowerCase() !== "healthy"
+        animal?.healthStatus && animal?.healthStatus?.toLowerCase() !== "healthy"
       ).length
     : 0;
 
   // Calculate tools that need maintenance - safely handle undefined values
   const toolsNeedingMaintenance = tools 
     ? tools.filter((tool) => 
-        tool?.condition?.toLowerCase() !== "good"
+        tool?.condition && tool?.condition?.toLowerCase() !== "good"
       ).length
     : 0;
 

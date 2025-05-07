@@ -1,4 +1,3 @@
-
 import React from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -25,7 +24,9 @@ import {
 const toolFormSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
   purpose: z.string().min(1, { message: "Purpose is required" }),
-  quantity: z.string().transform((val) => Number(val)),
+  quantity: z.string()
+    .min(1, { message: "Quantity is required" })
+    .transform((val) => Number(val)),
   purchaseDate: z.string().min(1, { message: "Purchase date is required" }),
   condition: z.string().min(1, { message: "Condition is required" }),
   notes: z.string().optional(),
@@ -51,7 +52,7 @@ const ToolForm = ({
   onSubmit,
   isSubmitting,
 }: ToolFormProps) => {
-  // Fix the type issue by handling quantity as number in defaultValues
+  // Transform the quantity to a string for the form
   const form = useForm<ToolFormValues>({
     resolver: zodResolver(toolFormSchema),
     defaultValues: {
@@ -64,9 +65,17 @@ const ToolForm = ({
     },
   });
 
+  // Handle form submission and convert quantity back to number
+  const handleSubmit = (values: ToolFormValues) => {
+    onSubmit({
+      ...values,
+      quantity: Number(values.quantity),
+    });
+  };
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField
             control={form.control}
