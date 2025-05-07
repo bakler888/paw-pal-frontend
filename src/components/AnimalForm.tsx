@@ -1,4 +1,3 @@
-
 import React from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -51,22 +50,17 @@ const AnimalForm = ({
   onSubmit,
   isSubmitting,
 }: AnimalFormProps) => {
+  // Fix the type issue by handling age and weight as numbers in defaultValues
   const form = useForm<AnimalFormValues>({
     resolver: zodResolver(animalFormSchema),
-    defaultValues: initialValues
-      ? {
-          ...initialValues,
-          age: String(initialValues.age),
-          weight: String(initialValues.weight),
-        }
-      : {
-          name: "",
-          breed: "",
-          age: "0",
-          weight: "0",
-          healthStatus: "Healthy",
-          notes: "",
-        },
+    defaultValues: {
+      name: initialValues?.name || "",
+      breed: initialValues?.breed || "",
+      age: initialValues ? String(initialValues.age) : "0",
+      weight: initialValues ? String(initialValues.weight) : "0",
+      healthStatus: initialValues?.healthStatus || "Healthy",
+      notes: initialValues?.notes || "",
+    },
   });
 
   return (

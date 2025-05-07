@@ -51,22 +51,17 @@ const ToolForm = ({
   onSubmit,
   isSubmitting,
 }: ToolFormProps) => {
+  // Fix the type issue by handling quantity as number in defaultValues
   const form = useForm<ToolFormValues>({
     resolver: zodResolver(toolFormSchema),
-    defaultValues: initialValues
-      ? {
-          ...initialValues,
-          quantity: String(initialValues.quantity),
-          purchaseDate: initialValues.purchaseDate.split('T')[0], // Format date for input
-        }
-      : {
-          name: "",
-          purpose: "",
-          quantity: "1",
-          purchaseDate: new Date().toISOString().split('T')[0],
-          condition: "Good",
-          notes: "",
-        },
+    defaultValues: {
+      name: initialValues?.name || "",
+      purpose: initialValues?.purpose || "",
+      quantity: initialValues ? String(initialValues.quantity) : "1",
+      purchaseDate: initialValues ? initialValues.purchaseDate.split('T')[0] : new Date().toISOString().split('T')[0],
+      condition: initialValues?.condition || "Good",
+      notes: initialValues?.notes || "",
+    },
   });
 
   return (
