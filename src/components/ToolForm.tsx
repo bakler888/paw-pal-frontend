@@ -1,3 +1,4 @@
+
 import React from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -13,23 +14,16 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 const toolFormSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
-  purpose: z.string().min(1, { message: "Purpose is required" }),
-  quantity: z.string()
-    .min(1, { message: "Quantity is required" })
+  price: z.string()
+    .min(1, { message: "Price is required" })
     .transform((val) => Number(val)),
-  purchaseDate: z.string().min(1, { message: "Purchase date is required" }),
-  condition: z.string().min(1, { message: "Condition is required" }),
-  notes: z.string().optional(),
+  count: z.string()
+    .min(1, { message: "Count is required" })
+    .transform((val) => Number(val)),
+  description: z.string().optional(),
 });
 
 type ToolFormValues = z.infer<typeof toolFormSchema>;
@@ -37,11 +31,9 @@ type ToolFormValues = z.infer<typeof toolFormSchema>;
 interface ToolFormProps {
   initialValues?: {
     name: string;
-    purpose: string;
-    quantity: number;
-    purchaseDate: string;
-    condition: string;
-    notes?: string;
+    price: number;
+    count: number;
+    description?: string;
   };
   onSubmit: (values: ToolFormValues) => void;
   isSubmitting: boolean;
@@ -52,24 +44,23 @@ const ToolForm = ({
   onSubmit,
   isSubmitting,
 }: ToolFormProps) => {
-  // Transform the quantity to a string for the form
+  // Initialize form with default values or initial values
   const form = useForm<ToolFormValues>({
     resolver: zodResolver(toolFormSchema),
     defaultValues: {
       name: initialValues?.name || "",
-      purpose: initialValues?.purpose || "",
-      quantity: initialValues ? String(initialValues.quantity) : "1",
-      purchaseDate: initialValues ? initialValues.purchaseDate.split('T')[0] : new Date().toISOString().split('T')[0],
-      condition: initialValues?.condition || "Good",
-      notes: initialValues?.notes || "",
+      price: initialValues ? String(initialValues.price) : "0",
+      count: initialValues ? String(initialValues.count) : "1",
+      description: initialValues?.description || "",
     },
   });
 
-  // Handle form submission and convert quantity back to number
+  // Handle form submission
   const handleSubmit = (values: ToolFormValues) => {
     onSubmit({
       ...values,
-      quantity: Number(values.quantity),
+      price: Number(values.price),
+      count: Number(values.count),
     });
   };
 
@@ -84,7 +75,7 @@ const ToolForm = ({
               <FormItem>
                 <FormLabel>Tool Name</FormLabel>
                 <FormControl>
-                  <Input placeholder="Care tool name" {...field} />
+                  <Input placeholder="Tool name" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -93,29 +84,16 @@ const ToolForm = ({
 
           <FormField
             control={form.control}
-            name="purpose"
+            name="price"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Purpose</FormLabel>
-                <FormControl>
-                  <Input placeholder="What is this tool used for?" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="quantity"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Quantity</FormLabel>
+                <FormLabel>Price</FormLabel>
                 <FormControl>
                   <Input
                     type="number"
-                    min="1"
-                    placeholder="Number of units"
+                    min="0"
+                    step="0.01"
+                    placeholder="Price"
                     {...field}
                   />
                 </FormControl>
@@ -126,41 +104,19 @@ const ToolForm = ({
 
           <FormField
             control={form.control}
-            name="purchaseDate"
+            name="count"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Purchase Date</FormLabel>
+                <FormLabel>Count</FormLabel>
                 <FormControl>
-                  <Input type="date" {...field} />
+                  <Input
+                    type="number"
+                    min="1"
+                    step="1"
+                    placeholder="Number of tools"
+                    {...field}
+                  />
                 </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="condition"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Condition</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select condition" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="Good">Good</SelectItem>
-                    <SelectItem value="Fair">Fair</SelectItem>
-                    <SelectItem value="Poor">Poor</SelectItem>
-                    <SelectItem value="Needs Repair">Needs Repair</SelectItem>
-                    <SelectItem value="Out of Service">Out of Service</SelectItem>
-                  </SelectContent>
-                </Select>
                 <FormMessage />
               </FormItem>
             )}
@@ -169,10 +125,10 @@ const ToolForm = ({
 
         <FormField
           control={form.control}
-          name="notes"
+          name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Notes</FormLabel>
+              <FormLabel>Description</FormLabel>
               <FormControl>
                 <Textarea
                   placeholder="Additional notes about the tool"

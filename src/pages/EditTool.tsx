@@ -55,6 +55,14 @@ const EditTool = () => {
     );
   }
 
+  // Extract the relevant fields from the tool data for the form
+  const toolFormData = {
+    name: tool.name,
+    price: tool.price,
+    count: tool.count,
+    description: tool.description,
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2">
@@ -74,7 +82,7 @@ const EditTool = () => {
         </CardHeader>
         <CardContent>
           <ToolForm
-            initialValues={tool}
+            initialValues={toolFormData}
             onSubmit={handleSubmit}
             isSubmitting={editToolMutation.isPending}
           />

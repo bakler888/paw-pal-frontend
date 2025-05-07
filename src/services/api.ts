@@ -1,3 +1,4 @@
+
 import { toast } from "sonner";
 
 const API_URL = "https://localhost:7227/api"; // Update this with your actual API URL
@@ -14,24 +15,25 @@ interface RegisterRequest {
   role?: string;
 }
 
+// Updated Animal interface to match the DTO
 interface Animal {
-  id: number;
+  animalID: number;
   name: string;
-  breed: string;
-  age: number;
-  weight: number;
-  healthStatus: string;
-  notes?: string;
+  animalPrice: number;
+  animalcount: number;
+  description?: string;
+  buyorsale: string | number; // Accepting both string and number for flexibility
+  dateOfbuyorsale: string;
+  animalCares: string[];
 }
 
+// Updated CareToolItem interface to match the DTO
 interface CareToolItem {
-  id: number;
+  id?: number; // Optional for new items
   name: string;
-  purpose: string;
-  quantity: number;
-  purchaseDate: string;
-  condition: string;
-  notes?: string;
+  price: number;
+  count: number;
+  description?: string;
 }
 
 // Helper function to parse JSON safely
@@ -182,7 +184,7 @@ export const logout = async () => {
     localStorage.removeItem("user");
     
     // Then try API call, but don't wait for success
-    fetch(`${API_URL}/Authentication/LogOut`, {
+    fetch(`${API_URL}/Auth/logout`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -204,7 +206,7 @@ export const getUserInfo = async () => {
       throw new Error("No authentication token");
     }
     
-    const response = await fetch(`${API_URL}/Authentication/ShowMe`, {
+    const response = await fetch(`${API_URL}/Auth/me`, {
       method: "GET",
       headers: {
         "Authorization": `Bearer ${token}`
@@ -218,7 +220,7 @@ export const getUserInfo = async () => {
   }
 };
 
-// Animals
+// Animals - Updated endpoints
 export const getAllAnimals = async (): Promise<Animal[]> => {
   try {
     const response = await fetch(`${API_URL}/Animals/GetAllAnimals`, {
@@ -238,7 +240,7 @@ export const getAllAnimals = async (): Promise<Animal[]> => {
 
 export const getAnimalById = async (id: number): Promise<Animal> => {
   try {
-    const response = await fetch(`${API_URL}/Animals/getAnimalById/${id}`, {
+    const response = await fetch(`${API_URL}/Animals/GetAnimalById?id=${id}`, {
       method: "GET",
       headers: {
         "Authorization": `Bearer ${localStorage.getItem("token")}`
@@ -253,15 +255,22 @@ export const getAnimalById = async (id: number): Promise<Animal> => {
   }
 };
 
-export const addAnimal = async (animal: Omit<Animal, "id">): Promise<Animal> => {
+export const addAnimal = async (animal: Omit<Animal, "animalID" | "dateOfbuyorsale" | "animalCares">): Promise<Animal> => {
   try {
+    // Set the dateOfbuyorsale to current date if not provided
+    const animalData = {
+      ...animal,
+      dateOfbuyorsale: new Date().toISOString(),
+      animalCares: [] // Initialize empty animalCares array
+    };
+    
     const response = await fetch(`${API_URL}/Animals/AddAnimal`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${localStorage.getItem("token")}`
       },
-      body: JSON.stringify(animal),
+      body: JSON.stringify(animalData),
     });
     
     return await handleResponse(response);
@@ -274,13 +283,19 @@ export const addAnimal = async (animal: Omit<Animal, "id">): Promise<Animal> => 
 
 export const editAnimal = async (id: number, animal: Partial<Animal>): Promise<Animal> => {
   try {
-    const response = await fetch(`${API_URL}/Animals/EditAnimal/${id}`, {
+    // For PUT requests, we need to include the ID
+    const animalData = {
+      animalID: id,
+      ...animal
+    };
+    
+    const response = await fetch(`${API_URL}/Animals/EditAnimal`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${localStorage.getItem("token")}`
       },
-      body: JSON.stringify(animal),
+      body: JSON.stringify(animalData),
     });
     
     return await handleResponse(response);
@@ -293,7 +308,7 @@ export const editAnimal = async (id: number, animal: Partial<Animal>): Promise<A
 
 export const deleteAnimal = async (id: number): Promise<void> => {
   try {
-    const response = await fetch(`${API_URL}/Animals/DeleteAnimal/${id}`, {
+    const response = await fetch(`${API_URL}/Animals/DeleteAnimal?id=${id}`, {
       method: "DELETE",
       headers: {
         "Authorization": `Bearer ${localStorage.getItem("token")}`
@@ -308,10 +323,10 @@ export const deleteAnimal = async (id: number): Promise<void> => {
   }
 };
 
-// Care Tools
+// Care Tools - Updated endpoints
 export const getAllCareTools = async (): Promise<CareToolItem[]> => {
   try {
-    const response = await fetch(`${API_URL}/CareTools/GetAllTools`, {
+    const response = await fetch(`${API_URL}/Care/GetAllCareTools`, {
       method: "GET",
       headers: {
         "Authorization": `Bearer ${localStorage.getItem("token")}`
@@ -328,7 +343,7 @@ export const getAllCareTools = async (): Promise<CareToolItem[]> => {
 
 export const getCareToolById = async (id: number): Promise<CareToolItem> => {
   try {
-    const response = await fetch(`${API_URL}/CareTools/GetToolById/${id}`, {
+    const response = await fetch(`${API_URL}/Care/GetToolById?id=${id}`, {
       method: "GET",
       headers: {
         "Authorization": `Bearer ${localStorage.getItem("token")}`
@@ -345,7 +360,7 @@ export const getCareToolById = async (id: number): Promise<CareToolItem> => {
 
 export const addCareTool = async (tool: Omit<CareToolItem, "id">): Promise<CareToolItem> => {
   try {
-    const response = await fetch(`${API_URL}/CareTools/AddTool`, {
+    const response = await fetch(`${API_URL}/Care/AddTool`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -364,13 +379,19 @@ export const addCareTool = async (tool: Omit<CareToolItem, "id">): Promise<CareT
 
 export const editCareTool = async (id: number, tool: Partial<CareToolItem>): Promise<CareToolItem> => {
   try {
-    const response = await fetch(`${API_URL}/CareTools/EditTool/${id}`, {
+    // For PUT requests, we need to include the ID
+    const toolData = {
+      id,
+      ...tool
+    };
+    
+    const response = await fetch(`${API_URL}/Care/UpdateTool`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${localStorage.getItem("token")}`
       },
-      body: JSON.stringify(tool),
+      body: JSON.stringify(toolData),
     });
     
     return await handleResponse(response);
@@ -383,7 +404,7 @@ export const editCareTool = async (id: number, tool: Partial<CareToolItem>): Pro
 
 export const deleteCareTool = async (id: number): Promise<void> => {
   try {
-    const response = await fetch(`${API_URL}/CareTools/deleteTool/${id}`, {
+    const response = await fetch(`${API_URL}/Care/DeleteTool?id=${id}`, {
       method: "DELETE",
       headers: {
         "Authorization": `Bearer ${localStorage.getItem("token")}`

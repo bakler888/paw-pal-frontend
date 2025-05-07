@@ -16,58 +16,88 @@ const Reports = () => {
     queryFn: getAllCareTools,
   });
 
-  // Prepare data for health status chart
-  const getHealthStatusData = () => {
+  // Prepare data for buy/sale status chart
+  const getBuySaleData = () => {
     if (!animals || animals.length === 0) return [];
     
-    const statusCounts: {[key: string]: number} = {};
+    const statusCounts: {[key: string]: number} = {
+      buy: 0,
+      sale: 0,
+      other: 0
+    };
+    
     animals.forEach((animal) => {
-      const status = animal.healthStatus || "Unknown";
-      statusCounts[status] = (statusCounts[status] || 0) + 1;
+      if (!animal.buyorsale) {
+        statusCounts.other++;
+      } else if (typeof animal.buyorsale === 'string') {
+        const status = animal.buyorsale.toLowerCase();
+        if (status === 'buy' || status === 'sale') {
+          statusCounts[status]++;
+        } else {
+          statusCounts.other++;
+        }
+      } else {
+        statusCounts.other++;
+      }
     });
     
     return Object.keys(statusCounts).map((status) => ({
-      name: status,
+      name: status.charAt(0).toUpperCase() + status.slice(1),
       value: statusCounts[status],
     }));
   };
 
-  // Prepare data for tools condition chart
-  const getToolConditionData = () => {
+  // Prepare data for tools count chart
+  const getToolCountData = () => {
     if (!tools || tools.length === 0) return [];
     
-    const conditionCounts: {[key: string]: number} = {};
+    // Group tools by name and sum their counts
+    const toolCounts: {[key: string]: number} = {};
     tools.forEach((tool) => {
-      const condition = tool.condition || "Unknown";
-      conditionCounts[condition] = (conditionCounts[condition] || 0) + 1;
+      if (tool.name && tool.count !== undefined) {
+        const name = tool.name;
+        toolCounts[name] = (toolCounts[name] || 0) + tool.count;
+      }
     });
     
-    return Object.keys(conditionCounts).map((condition) => ({
-      name: condition,
-      value: conditionCounts[condition],
+    return Object.keys(toolCounts).map((name) => ({
+      name: name,
+      value: toolCounts[name],
     }));
   };
 
   // Custom colors for charts
   const COLORS = ["#4B7F52", "#8FB996", "#D9BC9F", "#5E4B37", "#83653A"];
   
-  const healthStatusData = getHealthStatusData();
-  const toolConditionData = getToolConditionData();
+  const buySaleData = getBuySaleData();
+  const toolCountData = getToolCountData();
 
-  // Safely get count of healthy animals with null checks
-  const getHealthyAnimalCount = () => {
+  // Safely calculate total number of animals
+  const getTotalAnimalsCount = () => {
     if (!animals || animals.length === 0) return 0;
-    return animals.filter((animal) => 
-      animal.healthStatus && animal.healthStatus.toLowerCase() === "healthy"
-    ).length;
+    return animals.reduce((total, animal) => total + (animal.animalcount || 0), 0);
   };
 
-  // Safely get count of tools needing attention with null checks
-  const getToolsNeedingAttentionCount = () => {
+  // Safely calculate total value of animals
+  const getTotalAnimalsValue = () => {
+    if (!animals || animals.length === 0) return 0;
+    return animals.reduce((total, animal) => 
+      total + (animal.animalPrice || 0) * (animal.animalcount || 0), 0
+    );
+  };
+
+  // Safely calculate total tools count
+  const getTotalToolsCount = () => {
     if (!tools || tools.length === 0) return 0;
-    return tools.filter((tool) => 
-      tool.condition && tool.condition.toLowerCase() !== "good"
-    ).length;
+    return tools.reduce((total, tool) => total + (tool.count || 0), 0);
+  };
+
+  // Safely calculate total value of tools
+  const getTotalToolsValue = () => {
+    if (!tools || tools.length === 0) return 0;
+    return tools.reduce((total, tool) => 
+      total + (tool.price || 0) * (tool.count || 0), 0
+    );
   };
 
   return (
@@ -79,7 +109,7 @@ const Reports = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Animals by Health Status</CardTitle>
+            <CardTitle>Animals by Buy/Sale Status</CardTitle>
           </CardHeader>
           <CardContent>
             {animalsLoading ? (
@@ -90,7 +120,7 @@ const Reports = () => {
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
                   <Pie
-                    data={healthStatusData}
+                    data={buySaleData}
                     cx="50%"
                     cy="50%"
                     labelLine={false}
@@ -99,7 +129,7 @@ const Reports = () => {
                     fill="#8884d8"
                     dataKey="value"
                   >
-                    {healthStatusData.map((entry, index) => (
+                    {buySaleData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
@@ -117,7 +147,7 @@ const Reports = () => {
         
         <Card>
           <CardHeader>
-            <CardTitle>Tools by Condition</CardTitle>
+            <CardTitle>Tools by Count</CardTitle>
           </CardHeader>
           <CardContent>
             {toolsLoading ? (
@@ -127,7 +157,7 @@ const Reports = () => {
             ) : tools && tools.length > 0 ? (
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart
-                  data={toolConditionData}
+                  data={toolCountData}
                   margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
                 >
                   <XAxis dataKey="name" />
@@ -153,22 +183,22 @@ const Reports = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="bg-muted p-4 rounded-md">
               <p className="text-muted-foreground text-sm">Total Animals</p>
-              <p className="text-2xl font-bold">{animals?.length || 0}</p>
+              <p className="text-2xl font-bold">{getTotalAnimalsCount()}</p>
             </div>
             <div className="bg-muted p-4 rounded-md">
-              <p className="text-muted-foreground text-sm">Healthy Animals</p>
+              <p className="text-muted-foreground text-sm">Total Animals Value</p>
               <p className="text-2xl font-bold text-farm-green">
-                {getHealthyAnimalCount()}
+                ${getTotalAnimalsValue().toFixed(2)}
               </p>
             </div>
             <div className="bg-muted p-4 rounded-md">
               <p className="text-muted-foreground text-sm">Total Tools</p>
-              <p className="text-2xl font-bold">{tools?.length || 0}</p>
+              <p className="text-2xl font-bold">{getTotalToolsCount()}</p>
             </div>
             <div className="bg-muted p-4 rounded-md">
-              <p className="text-muted-foreground text-sm">Tools Needing Attention</p>
+              <p className="text-muted-foreground text-sm">Total Tools Value</p>
               <p className="text-2xl font-bold text-orange-500">
-                {getToolsNeedingAttentionCount()}
+                ${getTotalToolsValue().toFixed(2)}
               </p>
             </div>
           </div>

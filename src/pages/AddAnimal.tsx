@@ -14,7 +14,7 @@ const AddAnimal = () => {
   const queryClient = useQueryClient();
   
   const addAnimalMutation = useMutation({
-    mutationFn: (animal: any) => addAnimal(animal),
+    mutationFn: (animalData: any) => addAnimal(animalData),
     onSuccess: () => {
       toast.success("Animal added successfully!");
       queryClient.invalidateQueries({ queryKey: ["animals"] });

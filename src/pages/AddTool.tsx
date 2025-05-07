@@ -14,7 +14,7 @@ const AddTool = () => {
   const queryClient = useQueryClient();
   
   const addToolMutation = useMutation({
-    mutationFn: (tool: any) => addCareTool(tool),
+    mutationFn: (toolData: any) => addCareTool(toolData),
     onSuccess: () => {
       toast.success("Care tool added successfully!");
       queryClient.invalidateQueries({ queryKey: ["careTools"] });

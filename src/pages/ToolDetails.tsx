@@ -16,7 +16,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { ArrowLeft, Pencil, Trash2, CheckCircle, AlertCircle } from "lucide-react";
+import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
 
 const ToolDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -52,15 +52,6 @@ const ToolDetails = () => {
       setIsDeleteDialogOpen(false);
     }
   };
-
-  // Format date to a readable format
-  const formatDate = (dateString: string) => {
-    if (!dateString) return "N/A";
-    const date = new Date(dateString);
-    return date.toLocaleDateString();
-  };
-
-  const isGoodCondition = tool?.condition.toLowerCase() === "good";
 
   if (isLoading) {
     return (
@@ -100,19 +91,8 @@ const ToolDetails = () => {
             <div>
               <div className="flex items-center gap-3">
                 <h2 className="text-2xl font-bold">{tool.name}</h2>
-                {isGoodCondition ? (
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                    <CheckCircle className="h-3.5 w-3.5 mr-1" />
-                    Good Condition
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-                    <AlertCircle className="h-3.5 w-3.5 mr-1" />
-                    {tool.condition}
-                  </span>
-                )}
               </div>
-              <p className="text-muted-foreground mt-1">{tool.purpose}</p>
+              <p className="text-muted-foreground mt-1">{tool.description}</p>
             </div>
             <div className="flex gap-2">
               <Button
@@ -128,7 +108,7 @@ const ToolDetails = () => {
                 className="bg-farm-brown hover:bg-farm-brown/90"
                 asChild
               >
-                <Link to={`/care-tools/edit/${tool.id}`}>
+                <Link to={`/care-tools/edit/${id}`}>
                   <Pencil className="h-4 w-4 mr-1" />
                   Edit
                 </Link>
@@ -141,31 +121,25 @@ const ToolDetails = () => {
               <h3 className="font-medium">Details</h3>
               <div className="space-y-2">
                 <div className="flex justify-between border-b pb-2">
-                  <span className="text-muted-foreground">Quantity</span>
-                  <span className="font-medium">{tool.quantity}</span>
+                  <span className="text-muted-foreground">Price</span>
+                  <span className="font-medium">${tool.price?.toFixed(2) || '0.00'}</span>
                 </div>
                 <div className="flex justify-between border-b pb-2">
-                  <span className="text-muted-foreground">Purchase Date</span>
-                  <span className="font-medium">{formatDate(tool.purchaseDate)}</span>
+                  <span className="text-muted-foreground">Count</span>
+                  <span className="font-medium">{tool.count || 0}</span>
                 </div>
                 <div className="flex justify-between border-b pb-2">
-                  <span className="text-muted-foreground">Condition</span>
-                  <span
-                    className={`font-medium ${
-                      isGoodCondition ? "text-green-600" : "text-orange-600"
-                    }`}
-                  >
-                    {tool.condition}
-                  </span>
+                  <span className="text-muted-foreground">Total Value</span>
+                  <span className="font-medium">${((tool.price || 0) * (tool.count || 0)).toFixed(2)}</span>
                 </div>
               </div>
             </div>
 
-            {tool.notes && (
+            {tool.description && (
               <div className="space-y-4">
-                <h3 className="font-medium">Notes</h3>
+                <h3 className="font-medium">Description</h3>
                 <div className="bg-muted p-4 rounded-md text-sm">
-                  {tool.notes}
+                  {tool.description}
                 </div>
               </div>
             )}

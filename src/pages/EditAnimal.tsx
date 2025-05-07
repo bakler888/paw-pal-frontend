@@ -55,6 +55,15 @@ const EditAnimal = () => {
     );
   }
 
+  // Extract the relevant fields from the animal data for the form
+  const animalFormData = {
+    name: animal.name,
+    animalPrice: animal.animalPrice,
+    animalcount: animal.animalcount,
+    description: animal.description,
+    buyorsale: animal.buyorsale,
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2">
@@ -74,7 +83,7 @@ const EditAnimal = () => {
         </CardHeader>
         <CardContent>
           <AnimalForm
-            initialValues={animal}
+            initialValues={animalFormData}
             onSubmit={handleSubmit}
             isSubmitting={editAnimalMutation.isPending}
           />

@@ -1,3 +1,4 @@
+
 import React from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -23,13 +24,14 @@ import {
 
 const animalFormSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
-  species: z.string().min(1, { message: "Species is required" }),
-  breed: z.string().min(1, { message: "Breed is required" }),
-  age: z.string()
-    .min(1, { message: "Age is required" })
+  animalPrice: z.string()
+    .min(1, { message: "Price is required" })
     .transform((val) => Number(val)),
-  healthStatus: z.string().min(1, { message: "Health status is required" }),
-  notes: z.string().optional(),
+  animalcount: z.string()
+    .min(1, { message: "Count is required" })
+    .transform((val) => Number(val)),
+  description: z.string().optional(),
+  buyorsale: z.string().min(1, { message: "Buy/Sale status is required" }),
 });
 
 type AnimalFormValues = z.infer<typeof animalFormSchema>;
@@ -37,11 +39,10 @@ type AnimalFormValues = z.infer<typeof animalFormSchema>;
 interface AnimalFormProps {
   initialValues?: {
     name: string;
-    species: string;
-    breed: string;
-    age: number;
-    healthStatus: string;
-    notes?: string;
+    animalPrice: number;
+    animalcount: number;
+    description?: string;
+    buyorsale: string | number;
   };
   onSubmit: (values: AnimalFormValues) => void;
   isSubmitting: boolean;
@@ -52,30 +53,30 @@ const AnimalForm = ({
   onSubmit,
   isSubmitting,
 }: AnimalFormProps) => {
-  // Transform the age to a string for the form
+  // Initialize form with default values or initial values
   const form = useForm<AnimalFormValues>({
     resolver: zodResolver(animalFormSchema),
     defaultValues: {
       name: initialValues?.name || "",
-      species: initialValues?.species || "",
-      breed: initialValues?.breed || "",
-      age: initialValues ? String(initialValues.age) : "",
-      healthStatus: initialValues?.healthStatus || "Healthy",
-      notes: initialValues?.notes || "",
+      animalPrice: initialValues ? String(initialValues.animalPrice) : "0",
+      animalcount: initialValues ? String(initialValues.animalcount) : "1",
+      description: initialValues?.description || "",
+      buyorsale: initialValues?.buyorsale?.toString() || "buy",
     },
   });
 
-  // Handle form submission and convert age back to number
+  // Handle form submission
   const handleSubmit = (values: AnimalFormValues) => {
     onSubmit({
       ...values,
-      age: Number(values.age),
+      animalPrice: Number(values.animalPrice),
+      animalcount: Number(values.animalcount),
     });
   };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField
             control={form.control}
@@ -93,44 +94,16 @@ const AnimalForm = ({
 
           <FormField
             control={form.control}
-            name="species"
+            name="animalPrice"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Species</FormLabel>
-                <FormControl>
-                  <Input placeholder="Species" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="breed"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Breed</FormLabel>
-                <FormControl>
-                  <Input placeholder="Breed" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="age"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Age (years)</FormLabel>
+                <FormLabel>Price</FormLabel>
                 <FormControl>
                   <Input
                     type="number"
                     min="0"
-                    step="0.1"
-                    placeholder="Age in years"
+                    step="0.01"
+                    placeholder="Price"
                     {...field}
                   />
                 </FormControl>
@@ -141,24 +114,42 @@ const AnimalForm = ({
 
           <FormField
             control={form.control}
-            name="healthStatus"
+            name="animalcount"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Health Status</FormLabel>
+                <FormLabel>Count</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    min="0"
+                    step="1"
+                    placeholder="Number of animals"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="buyorsale"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Buy/Sale Status</FormLabel>
                 <Select
                   onValueChange={field.onChange}
                   defaultValue={field.value}
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select health status" />
+                      <SelectValue placeholder="Select status" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="Healthy">Healthy</SelectItem>
-                    <SelectItem value="Minor Issues">Minor Issues</SelectItem>
-                    <SelectItem value="Needs Attention">Needs Attention</SelectItem>
-                    <SelectItem value="Critical">Critical</SelectItem>
+                    <SelectItem value="buy">Buy</SelectItem>
+                    <SelectItem value="sale">Sale</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -169,10 +160,10 @@ const AnimalForm = ({
 
         <FormField
           control={form.control}
-          name="notes"
+          name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Notes</FormLabel>
+              <FormLabel>Description</FormLabel>
               <FormControl>
                 <Textarea
                   placeholder="Additional notes about the animal"
