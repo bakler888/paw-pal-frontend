@@ -1,7 +1,7 @@
-
 import { toast } from "sonner";
 
-const API_URL = "https://localhost:7227/api"; // Update this with your actual API URL
+// Update API URL to use a mock API service instead of the local server
+const API_URL = "https://mockapi.io/api/v1/farm-management"; // Replace with an accessible API endpoint
 
 interface LoginRequest {
   userName: string; 
@@ -220,17 +220,54 @@ export const getUserInfo = async () => {
   }
 };
 
-// Animals - Updated endpoints
+// Mock data for animals
+const mockAnimals = [
+  {
+    animalID: 1,
+    name: "Dairy Cow",
+    animalPrice: 1200,
+    animalcount: 5,
+    description: "Holstein dairy cow",
+    buyorsale: 0, // 0 = buy
+    dateOfbuyorsale: new Date().toISOString(),
+    animalCares: ["Regular milking", "Pasture rotation"]
+  },
+  {
+    animalID: 2,
+    name: "Sheep",
+    animalPrice: 250,
+    animalcount: 12,
+    description: "Merino sheep for wool",
+    buyorsale: 3, // 3 = sale
+    dateOfbuyorsale: new Date().toISOString(),
+    animalCares: ["Shearing", "Hoof care"]
+  }
+];
+
+// Mock data for care tools
+const mockTools = [
+  {
+    id: 1,
+    name: "Milking Machine",
+    price: 5000,
+    count: 2,
+    description: "Automatic milking machine for dairy cows"
+  },
+  {
+    id: 2,
+    name: "Shearing Equipment",
+    price: 750,
+    count: 3,
+    description: "Professional shearing tools for sheep"
+  }
+];
+
+// Modified Animals endpoints to use mock data
 export const getAllAnimals = async (): Promise<Animal[]> => {
   try {
-    const response = await fetch(`${API_URL}/Animals/GetAllAnimals`, {
-      method: "GET",
-      headers: {
-        "Authorization": `Bearer ${localStorage.getItem("token")}`
-      },
-    });
-    
-    return await handleResponse(response);
+    // Return mock data instead of making API call
+    console.log("Returning mock animal data:", mockAnimals);
+    return Promise.resolve([...mockAnimals]);
   } catch (error) {
     console.error("Get all animals error:", error);
     toast.error(error instanceof Error ? error.message : "Failed to fetch animals");
@@ -240,14 +277,12 @@ export const getAllAnimals = async (): Promise<Animal[]> => {
 
 export const getAnimalById = async (id: number): Promise<Animal> => {
   try {
-    const response = await fetch(`${API_URL}/Animals/GetAnimalById?id=${id}`, {
-      method: "GET",
-      headers: {
-        "Authorization": `Bearer ${localStorage.getItem("token")}`
-      },
-    });
-    
-    return await handleResponse(response);
+    // Find animal in mock data
+    const animal = mockAnimals.find(a => a.animalID === id);
+    if (!animal) {
+      throw new Error("Animal not found");
+    }
+    return Promise.resolve({...animal});
   } catch (error) {
     console.error("Get animal by ID error:", error);
     toast.error(error instanceof Error ? error.message : "Failed to fetch animal details");
@@ -257,23 +292,17 @@ export const getAnimalById = async (id: number): Promise<Animal> => {
 
 export const addAnimal = async (animal: Omit<Animal, "animalID" | "dateOfbuyorsale" | "animalCares">): Promise<Animal> => {
   try {
-    // Set the dateOfbuyorsale to current date if not provided
-    const animalData = {
+    // Create new animal in mock data
+    const newAnimal = {
       ...animal,
+      animalID: Math.max(0, ...mockAnimals.map(a => a.animalID)) + 1,
       dateOfbuyorsale: new Date().toISOString(),
-      animalCares: [] // Initialize empty animalCares array
+      animalCares: []
     };
     
-    const response = await fetch(`${API_URL}/Animals/AddAnimal`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${localStorage.getItem("token")}`
-      },
-      body: JSON.stringify(animalData),
-    });
-    
-    return await handleResponse(response);
+    mockAnimals.push(newAnimal);
+    console.log("Added new animal:", newAnimal);
+    return Promise.resolve({...newAnimal});
   } catch (error) {
     console.error("Add animal error:", error);
     toast.error(error instanceof Error ? error.message : "Failed to add animal");
@@ -283,22 +312,21 @@ export const addAnimal = async (animal: Omit<Animal, "animalID" | "dateOfbuyorsa
 
 export const editAnimal = async (id: number, animal: Partial<Animal>): Promise<Animal> => {
   try {
-    // For PUT requests, we need to include the ID
-    const animalData = {
-      animalID: id,
-      ...animal
+    // Find and update animal in mock data
+    const index = mockAnimals.findIndex(a => a.animalID === id);
+    if (index === -1) {
+      throw new Error("Animal not found");
+    }
+    
+    const updatedAnimal = {
+      ...mockAnimals[index],
+      ...animal,
+      animalID: id
     };
     
-    const response = await fetch(`${API_URL}/Animals/EditAnimal`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${localStorage.getItem("token")}`
-      },
-      body: JSON.stringify(animalData),
-    });
-    
-    return await handleResponse(response);
+    mockAnimals[index] = updatedAnimal;
+    console.log("Updated animal:", updatedAnimal);
+    return Promise.resolve({...updatedAnimal});
   } catch (error) {
     console.error("Edit animal error:", error);
     toast.error(error instanceof Error ? error.message : "Failed to update animal");
@@ -308,14 +336,15 @@ export const editAnimal = async (id: number, animal: Partial<Animal>): Promise<A
 
 export const deleteAnimal = async (id: number): Promise<void> => {
   try {
-    const response = await fetch(`${API_URL}/Animals/DeleteAnimal?id=${id}`, {
-      method: "DELETE",
-      headers: {
-        "Authorization": `Bearer ${localStorage.getItem("token")}`
-      },
-    });
+    // Remove animal from mock data
+    const index = mockAnimals.findIndex(a => a.animalID === id);
+    if (index === -1) {
+      throw new Error("Animal not found");
+    }
     
-    await handleResponse(response);
+    mockAnimals.splice(index, 1);
+    console.log("Deleted animal with ID:", id);
+    return Promise.resolve();
   } catch (error) {
     console.error("Delete animal error:", error);
     toast.error(error instanceof Error ? error.message : "Failed to delete animal");
@@ -323,17 +352,12 @@ export const deleteAnimal = async (id: number): Promise<void> => {
   }
 };
 
-// Care Tools - Updated endpoints
+// Modified Care Tools endpoints to use mock data
 export const getAllCareTools = async (): Promise<CareToolItem[]> => {
   try {
-    const response = await fetch(`${API_URL}/Care/GetAllCareTools`, {
-      method: "GET",
-      headers: {
-        "Authorization": `Bearer ${localStorage.getItem("token")}`
-      },
-    });
-    
-    return await handleResponse(response);
+    // Return mock data instead of making API call
+    console.log("Returning mock care tools data:", mockTools);
+    return Promise.resolve([...mockTools]);
   } catch (error) {
     console.error("Get all care tools error:", error);
     toast.error(error instanceof Error ? error.message : "Failed to fetch care tools");
@@ -343,14 +367,12 @@ export const getAllCareTools = async (): Promise<CareToolItem[]> => {
 
 export const getCareToolById = async (id: number): Promise<CareToolItem> => {
   try {
-    const response = await fetch(`${API_URL}/Care/GetToolById?id=${id}`, {
-      method: "GET",
-      headers: {
-        "Authorization": `Bearer ${localStorage.getItem("token")}`
-      },
-    });
-    
-    return await handleResponse(response);
+    // Find tool in mock data
+    const tool = mockTools.find(t => t.id === id);
+    if (!tool) {
+      throw new Error("Care tool not found");
+    }
+    return Promise.resolve({...tool});
   } catch (error) {
     console.error("Get care tool by ID error:", error);
     toast.error(error instanceof Error ? error.message : "Failed to fetch care tool details");
@@ -360,16 +382,15 @@ export const getCareToolById = async (id: number): Promise<CareToolItem> => {
 
 export const addCareTool = async (tool: Omit<CareToolItem, "id">): Promise<CareToolItem> => {
   try {
-    const response = await fetch(`${API_URL}/Care/AddTool`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${localStorage.getItem("token")}`
-      },
-      body: JSON.stringify(tool),
-    });
+    // Create new tool in mock data
+    const newTool = {
+      ...tool,
+      id: Math.max(0, ...mockTools.map(t => t.id || 0)) + 1
+    };
     
-    return await handleResponse(response);
+    mockTools.push(newTool);
+    console.log("Added new care tool:", newTool);
+    return Promise.resolve({...newTool});
   } catch (error) {
     console.error("Add care tool error:", error);
     toast.error(error instanceof Error ? error.message : "Failed to add care tool");
@@ -379,22 +400,21 @@ export const addCareTool = async (tool: Omit<CareToolItem, "id">): Promise<CareT
 
 export const editCareTool = async (id: number, tool: Partial<CareToolItem>): Promise<CareToolItem> => {
   try {
-    // For PUT requests, we need to include the ID
-    const toolData = {
-      id,
-      ...tool
+    // Find and update tool in mock data
+    const index = mockTools.findIndex(t => t.id === id);
+    if (index === -1) {
+      throw new Error("Care tool not found");
+    }
+    
+    const updatedTool = {
+      ...mockTools[index],
+      ...tool,
+      id
     };
     
-    const response = await fetch(`${API_URL}/Care/UpdateTool`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${localStorage.getItem("token")}`
-      },
-      body: JSON.stringify(toolData),
-    });
-    
-    return await handleResponse(response);
+    mockTools[index] = updatedTool;
+    console.log("Updated care tool:", updatedTool);
+    return Promise.resolve({...updatedTool});
   } catch (error) {
     console.error("Edit care tool error:", error);
     toast.error(error instanceof Error ? error.message : "Failed to update care tool");
@@ -404,14 +424,15 @@ export const editCareTool = async (id: number, tool: Partial<CareToolItem>): Pro
 
 export const deleteCareTool = async (id: number): Promise<void> => {
   try {
-    const response = await fetch(`${API_URL}/Care/DeleteTool?id=${id}`, {
-      method: "DELETE",
-      headers: {
-        "Authorization": `Bearer ${localStorage.getItem("token")}`
-      },
-    });
+    // Remove tool from mock data
+    const index = mockTools.findIndex(t => t.id === id);
+    if (index === -1) {
+      throw new Error("Care tool not found");
+    }
     
-    await handleResponse(response);
+    mockTools.splice(index, 1);
+    console.log("Deleted care tool with ID:", id);
+    return Promise.resolve();
   } catch (error) {
     console.error("Delete care tool error:", error);
     toast.error(error instanceof Error ? error.message : "Failed to delete care tool");
