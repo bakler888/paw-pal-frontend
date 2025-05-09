@@ -1,38 +1,15 @@
+
 import React from "react";
-import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Animal } from "@/types";
-
-const animalFormSchema = z.object({
-  name: z.string().min(1, { message: "Name is required" }),
-  animalPrice: z.coerce.number().min(0, { message: "Price must be a positive number" }),
-  animalcount: z.coerce.number().min(1, { message: "Count must be at least 1" }),
-  description: z.string().optional(),
-  buyorsale: z.enum(["buy", "sale"], { 
-    required_error: "Buy/Sale status is required" 
-  }),
-});
-
-type AnimalFormValues = z.infer<typeof animalFormSchema>;
+import { animalFormSchema, AnimalFormValues } from "./animal-form/AnimalFormSchema";
+import TextInputField from "./animal-form/TextInputField";
+import NumberInputField from "./animal-form/NumberInputField";
+import SelectField from "./animal-form/SelectField";
+import TextareaField from "./animal-form/TextareaField";
 
 interface AnimalFormProps {
   initialValues?: {
@@ -75,106 +52,54 @@ const AnimalForm = ({
     onSubmit(animalData);
   };
 
+  const statusOptions = [
+    { value: "buy", label: "Buy" },
+    { value: "sale", label: "Sale" },
+  ];
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <FormField
-            control={form.control}
+          <TextInputField
+            form={form}
             name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Animal Name</FormLabel>
-                <FormControl>
-                  <Input placeholder="Animal name" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+            label="Animal Name"
+            placeholder="Animal name"
           />
 
-          <FormField
-            control={form.control}
+          <NumberInputField
+            form={form}
             name="animalPrice"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Price</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    placeholder="Price"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+            label="Price"
+            placeholder="Price"
+            min="0"
+            step="0.01"
           />
 
-          <FormField
-            control={form.control}
+          <NumberInputField
+            form={form}
             name="animalcount"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Count</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    min="0"
-                    step="1"
-                    placeholder="Number of animals"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+            label="Count"
+            placeholder="Number of animals"
+            min="0"
+            step="1"
           />
 
-          <FormField
-            control={form.control}
+          <SelectField
+            form={form}
             name="buyorsale"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Buy/Sale Status</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select status" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="buy">Buy</SelectItem>
-                    <SelectItem value="sale">Sale</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
+            label="Buy/Sale Status"
+            placeholder="Select status"
+            options={statusOptions}
           />
         </div>
 
-        <FormField
-          control={form.control}
+        <TextareaField
+          form={form}
           name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Description</FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder="Additional notes about the animal"
-                  className="min-h-[120px]"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          label="Description"
+          placeholder="Additional notes about the animal"
         />
 
         <div className="flex justify-end">
