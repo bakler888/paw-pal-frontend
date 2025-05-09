@@ -20,7 +20,10 @@ const EditAnimal = () => {
   });
 
   const editAnimalMutation = useMutation({
-    mutationFn: (animalData: any) => editAnimal(Number(id), animalData),
+    mutationFn: (animalData: any) => {
+      console.log("Sending data to API:", animalData);
+      return editAnimal(Number(id), animalData);
+    },
     onSuccess: () => {
       toast.success("Animal updated successfully!");
       queryClient.invalidateQueries({ queryKey: ["animals"] });
@@ -29,11 +32,19 @@ const EditAnimal = () => {
     },
     onError: (error: Error) => {
       toast.error(`Error: ${error.message}`);
+      console.error("Edit error details:", error);
     },
   });
 
   const handleSubmit = (values: any) => {
-    editAnimalMutation.mutate(values);
+    // Make sure we're preserving the dateOfbuyorsale and animalCares from the original animal
+    const updatedAnimal = {
+      ...values,
+      dateOfbuyorsale: animal?.dateOfbuyorsale,
+      animalCares: animal?.animalCares || []
+    };
+    
+    editAnimalMutation.mutate(updatedAnimal);
   };
 
   if (isLoading) {

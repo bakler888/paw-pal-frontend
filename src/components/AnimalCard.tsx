@@ -13,7 +13,10 @@ interface AnimalCardProps {
 
 const AnimalCard = ({ animal, onDelete }: AnimalCardProps) => {
   // Safely determine if this is a buy record
-  const isBuying = animal.buyorsale === "buy";
+  // If it's a number, we assume values < 3 are "buy" and values >= 3 are "sale" based on the API response
+  const isBuying = 
+    animal.buyorsale === "buy" || 
+    (typeof animal.buyorsale === "number" && animal.buyorsale < 3);
 
   return (
     <Card className="overflow-hidden">

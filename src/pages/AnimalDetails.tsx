@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -17,17 +16,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { ArrowLeft, Pencil, Trash2, CheckCircle, AlertTriangle } from "lucide-react";
-
-interface Animal {
-  animalID: number;
-  name: string;
-  animalPrice: number;
-  animalcount?: number;
-  description?: string;
-  buyorsale: string | number;
-  dateOfbuyorsale?: string;
-  animalCares?: string[];
-}
+import { Animal } from "@/types";
 
 const AnimalDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -64,7 +53,12 @@ const AnimalDetails = () => {
     }
   };
 
-  const isBuying = animal?.buyorsale?.toString()?.toLowerCase() === "buy";
+  // Determine if buying based on the buyorsale value
+  // If it's a number, we assume values < 3 are "buy" and values >= 3 are "sale"
+  const isBuying = animal && (
+    animal.buyorsale === "buy" || 
+    (typeof animal.buyorsale === "number" && animal.buyorsale < 3)
+  );
 
   if (isLoading) {
     return (

@@ -28,6 +28,15 @@ const AnimalForm = ({
   onSubmit,
   isSubmitting,
 }: AnimalFormProps) => {
+  // Normalize buyorsale value from backend
+  const normalizeBuyOrSale = (value: string | number): "buy" | "sale" => {
+    if (typeof value === "number") {
+      // Assuming 0, 1, 2 are buy and 3, 4, 5 are sale based on API response
+      return value < 3 ? "buy" : "sale";
+    }
+    return value === "buy" ? "buy" : "sale";
+  };
+
   // Initialize form with default values or initial values
   const form = useForm<AnimalFormValues>({
     resolver: zodResolver(animalFormSchema),
@@ -36,19 +45,24 @@ const AnimalForm = ({
       animalPrice: initialValues ? initialValues.animalPrice : 0,
       animalcount: initialValues ? initialValues.animalcount : 1,
       description: initialValues?.description || "",
-      buyorsale: initialValues?.buyorsale === "buy" || initialValues?.buyorsale === 0 ? "buy" : "sale",
+      buyorsale: initialValues ? normalizeBuyOrSale(initialValues.buyorsale) : "buy",
     },
   });
 
   // Handle form submission
   const handleSubmit = (values: AnimalFormValues) => {
+    // Convert buyorsale to the format expected by the backend
+    const buyOrSaleValue = values.buyorsale === "buy" ? 0 : 3; // Using 0 for buy and 3 for sale based on observed API response
+
     const animalData: Animal = {
       name: values.name,
       animalPrice: values.animalPrice,
       animalcount: values.animalcount,
       description: values.description,
-      buyorsale: values.buyorsale,
+      buyorsale: buyOrSaleValue,
     };
+    
+    console.log("Submitting form with data:", animalData);
     onSubmit(animalData);
   };
 

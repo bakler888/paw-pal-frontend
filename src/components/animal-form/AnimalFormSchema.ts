@@ -6,7 +6,10 @@ export const animalFormSchema = z.object({
   animalPrice: z.coerce.number().min(0, { message: "Price must be a positive number" }),
   animalcount: z.coerce.number().min(1, { message: "Count must be at least 1" }),
   description: z.string().optional(),
-  buyorsale: z.enum(["buy", "sale"], { 
+  buyorsale: z.union([
+    z.enum(["buy", "sale"]),
+    z.number()
+  ], { 
     required_error: "Buy/Sale status is required" 
   }),
 });

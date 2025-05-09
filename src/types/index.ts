@@ -6,7 +6,7 @@ export interface Animal {
   animalPrice: number;
   animalcount?: number;
   description?: string;
-  buyorsale: "buy" | "sale";
+  buyorsale: number | "buy" | "sale"; // Can be number (from API) or string (for UI)
   dateOfbuyorsale?: string;
   animalCares?: string[];
 }
