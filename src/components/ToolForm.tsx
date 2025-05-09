@@ -18,12 +18,8 @@ import { CareToolItem } from "@/types";
 
 const toolFormSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
-  price: z.string()
-    .min(1, { message: "Price is required" })
-    .transform((val) => parseFloat(val)),
-  count: z.string()
-    .min(1, { message: "Count is required" })
-    .transform((val) => parseInt(val, 10)),
+  price: z.coerce.number().min(0, { message: "Price must be a positive number" }),
+  count: z.coerce.number().min(1, { message: "Count must be at least 1" }),
   description: z.string().optional(),
 });
 
@@ -50,8 +46,8 @@ const ToolForm = ({
     resolver: zodResolver(toolFormSchema),
     defaultValues: {
       name: initialValues?.name || "",
-      price: initialValues ? String(initialValues.price) : "0",
-      count: initialValues ? String(initialValues.count) : "1",
+      price: initialValues ? initialValues.price : 0,
+      count: initialValues ? initialValues.count : 1,
       description: initialValues?.description || "",
     },
   });
@@ -60,8 +56,8 @@ const ToolForm = ({
   const handleSubmit = (values: ToolFormValues) => {
     const toolData: CareToolItem = {
       name: values.name,
-      price: values.price, // Now transformed to number
-      count: values.count, // Now transformed to number
+      price: values.price,
+      count: values.count,
       description: values.description,
     };
     onSubmit(toolData);

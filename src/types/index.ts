@@ -6,7 +6,7 @@ export interface Animal {
   animalPrice: number;
   animalcount?: number;
   description?: string;
-  buyorsale: number | "buy" | "sale";
+  buyorsale: "buy" | "sale";
   dateOfbuyorsale?: string;
   animalCares?: string[];
 }

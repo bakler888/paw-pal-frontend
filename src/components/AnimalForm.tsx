@@ -1,4 +1,3 @@
-
 import React from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -25,14 +24,12 @@ import { Animal } from "@/types";
 
 const animalFormSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
-  animalPrice: z.string()
-    .min(1, { message: "Price is required" })
-    .transform((val) => parseFloat(val)),
-  animalcount: z.string()
-    .min(1, { message: "Count is required" })
-    .transform((val) => parseInt(val, 10)),
+  animalPrice: z.coerce.number().min(0, { message: "Price must be a positive number" }),
+  animalcount: z.coerce.number().min(1, { message: "Count must be at least 1" }),
   description: z.string().optional(),
-  buyorsale: z.string().min(1, { message: "Buy/Sale status is required" }),
+  buyorsale: z.enum(["buy", "sale"], { 
+    required_error: "Buy/Sale status is required" 
+  }),
 });
 
 type AnimalFormValues = z.infer<typeof animalFormSchema>;
@@ -59,10 +56,10 @@ const AnimalForm = ({
     resolver: zodResolver(animalFormSchema),
     defaultValues: {
       name: initialValues?.name || "",
-      animalPrice: initialValues ? String(initialValues.animalPrice) : "0",
-      animalcount: initialValues ? String(initialValues.animalcount) : "1",
+      animalPrice: initialValues ? initialValues.animalPrice : 0,
+      animalcount: initialValues ? initialValues.animalcount : 1,
       description: initialValues?.description || "",
-      buyorsale: initialValues?.buyorsale?.toString() || "buy",
+      buyorsale: initialValues?.buyorsale === "buy" || initialValues?.buyorsale === 0 ? "buy" : "sale",
     },
   });
 
@@ -70,10 +67,10 @@ const AnimalForm = ({
   const handleSubmit = (values: AnimalFormValues) => {
     const animalData: Animal = {
       name: values.name,
-      animalPrice: values.animalPrice, // Now transformed to number
-      animalcount: values.animalcount, // Now transformed to number
+      animalPrice: values.animalPrice,
+      animalcount: values.animalcount,
       description: values.description,
-      buyorsale: values.buyorsale === "buy" ? "buy" : "sale",
+      buyorsale: values.buyorsale,
     };
     onSubmit(animalData);
   };

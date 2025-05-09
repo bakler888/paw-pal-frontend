@@ -18,17 +18,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Plus, Search } from "lucide-react";
-
-interface Animal {
-  animalID: number;
-  name: string;
-  animalPrice: number;
-  animalcount?: number;
-  description?: string;
-  buyorsale: string | number;
-  dateOfbuyorsale?: string;
-  animalCares?: string[];
-}
+import { Animal } from "@/types";
 
 const Animals = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -67,11 +57,13 @@ const Animals = () => {
   };
 
   const filteredAnimals = animals?.filter((animal) => {
+    if (!searchTerm) return true;
+    
     const searchTermLower = searchTerm.toLowerCase();
     return (
       animal.name.toLowerCase().includes(searchTermLower) ||
-      animal.description?.toLowerCase().includes(searchTermLower) ||
-      animal.buyorsale?.toString().toLowerCase().includes(searchTermLower)
+      (animal.description && animal.description.toLowerCase().includes(searchTermLower)) ||
+      (typeof animal.buyorsale === 'string' && animal.buyorsale.toLowerCase().includes(searchTermLower))
     );
   });
 
@@ -106,7 +98,7 @@ const Animals = () => {
           {filteredAnimals.map((animal) => (
             <AnimalCard
               key={animal.animalID}
-              animal={animal}
+              animal={animal as Animal}
               onDelete={handleDeleteAnimal}
             />
           ))}

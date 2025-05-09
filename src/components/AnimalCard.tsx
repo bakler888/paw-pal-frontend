@@ -12,8 +12,8 @@ interface AnimalCardProps {
 }
 
 const AnimalCard = ({ animal, onDelete }: AnimalCardProps) => {
-  // Safely determine if this is a buy record (handles undefined and various types)
-  const isBuying = animal.buyorsale === "buy" || animal.buyorsale === 0;
+  // Safely determine if this is a buy record
+  const isBuying = animal.buyorsale === "buy";
 
   return (
     <Card className="overflow-hidden">
