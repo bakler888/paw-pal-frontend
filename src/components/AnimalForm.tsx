@@ -21,15 +21,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Animal } from "@/types";
 
 const animalFormSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
   animalPrice: z.string()
     .min(1, { message: "Price is required" })
-    .transform((val) => Number(val)),
+    .transform((val) => parseFloat(val)),
   animalcount: z.string()
     .min(1, { message: "Count is required" })
-    .transform((val) => Number(val)),
+    .transform((val) => parseInt(val, 10)),
   description: z.string().optional(),
   buyorsale: z.string().min(1, { message: "Buy/Sale status is required" }),
 });
@@ -44,7 +45,7 @@ interface AnimalFormProps {
     description?: string;
     buyorsale: string | number;
   };
-  onSubmit: (values: AnimalFormValues) => void;
+  onSubmit: (values: Animal) => void;
   isSubmitting: boolean;
 }
 
@@ -67,11 +68,14 @@ const AnimalForm = ({
 
   // Handle form submission
   const handleSubmit = (values: AnimalFormValues) => {
-    onSubmit({
-      ...values,
-      animalPrice: Number(values.animalPrice),
-      animalcount: Number(values.animalcount),
-    });
+    const animalData: Animal = {
+      name: values.name,
+      animalPrice: values.animalPrice, // Now transformed to number
+      animalcount: values.animalcount, // Now transformed to number
+      description: values.description,
+      buyorsale: values.buyorsale === "buy" ? "buy" : "sale",
+    };
+    onSubmit(animalData);
   };
 
   return (

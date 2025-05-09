@@ -4,17 +4,7 @@ import { Link } from "react-router-dom";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, CheckCircle } from "lucide-react";
-
-interface Animal {
-  animalID: number;  // Changed from id to animalID
-  name: string;
-  animalPrice: number;
-  animalcount?: number;
-  description?: string;
-  buyorsale: string | number;
-  dateOfbuyorsale?: string;
-  animalCares?: string[];
-}
+import { Animal } from "@/types";
 
 interface AnimalCardProps {
   animal: Animal;
@@ -22,9 +12,8 @@ interface AnimalCardProps {
 }
 
 const AnimalCard = ({ animal, onDelete }: AnimalCardProps) => {
-  // Default to "Unknown" if healthStatus doesn't exist
-  // We'll use a display name based on buyorsale value instead
-  const isBuying = animal.buyorsale?.toString()?.toLowerCase() === "buy";
+  // Safely determine if this is a buy record (handles undefined and various types)
+  const isBuying = animal.buyorsale === "buy" || animal.buyorsale === 0;
 
   return (
     <Card className="overflow-hidden">
@@ -71,7 +60,7 @@ const AnimalCard = ({ animal, onDelete }: AnimalCardProps) => {
         <Button
           variant="destructive"
           size="sm"
-          onClick={() => onDelete(animal.animalID)}
+          onClick={() => onDelete(animal.animalID || 0)}
         >
           Delete
         </Button>

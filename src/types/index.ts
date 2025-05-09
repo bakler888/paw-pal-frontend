@@ -1,12 +1,12 @@
 
 // Animal interface that matches the DTO from the backend
 export interface Animal {
-  animalID: number;
+  animalID?: number;
   name: string;
   animalPrice: number;
   animalcount?: number;
   description?: string;
-  buyorsale: string | number;
+  buyorsale: number | "buy" | "sale";
   dateOfbuyorsale?: string;
   animalCares?: string[];
 }

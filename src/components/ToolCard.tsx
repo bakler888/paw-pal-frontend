@@ -3,17 +3,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, CheckCircle } from "lucide-react";
-
-interface CareToolItem {
-  id: number;
-  name: string;
-  purpose: string;
-  quantity: number;
-  purchaseDate: string;
-  condition: string;
-  notes?: string;
-}
+import { CareToolItem } from "@/types";
 
 interface ToolCardProps {
   tool: CareToolItem;
@@ -21,50 +11,29 @@ interface ToolCardProps {
 }
 
 const ToolCard = ({ tool, onDelete }: ToolCardProps) => {
-  const isGoodCondition = tool.condition.toLowerCase() === "good";
-  
-  // Format date to a readable format
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString();
-  };
-
   return (
     <Card className="overflow-hidden">
       <CardContent className="p-0">
         <div className="p-6">
           <div className="flex justify-between items-start mb-3">
             <h3 className="text-lg font-semibold">{tool.name}</h3>
-            {isGoodCondition ? (
-              <CheckCircle className="h-5 w-5 text-green-500" />
-            ) : (
-              <AlertCircle className="h-5 w-5 text-orange-500" />
-            )}
           </div>
           
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Purpose:</span>
-              <span className="font-medium">{tool.purpose}</span>
+              <span className="text-muted-foreground">Price:</span>
+              <span className="font-medium">${tool.price.toFixed(2)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Quantity:</span>
-              <span className="font-medium">{tool.quantity}</span>
+              <span className="text-muted-foreground">Count:</span>
+              <span className="font-medium">{tool.count || 1}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Purchased:</span>
-              <span className="font-medium">{formatDate(tool.purchaseDate)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Condition:</span>
-              <span
-                className={`font-medium ${
-                  isGoodCondition ? "text-green-600" : "text-orange-600"
-                }`}
-              >
-                {tool.condition}
-              </span>
-            </div>
+            {tool.description && (
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Description:</span>
+                <span className="font-medium line-clamp-1">{tool.description}</span>
+              </div>
+            )}
           </div>
         </div>
       </CardContent>
@@ -72,7 +41,7 @@ const ToolCard = ({ tool, onDelete }: ToolCardProps) => {
         <Button
           variant="destructive"
           size="sm"
-          onClick={() => onDelete(tool.id)}
+          onClick={() => onDelete(tool.id || 0)}
         >
           Delete
         </Button>

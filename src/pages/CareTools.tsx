@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import ToolCard from "@/components/ToolCard";
+import { CareToolItem } from "@/types";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -59,8 +60,7 @@ const CareTools = () => {
     const searchTermLower = searchTerm.toLowerCase();
     return (
       tool.name.toLowerCase().includes(searchTermLower) ||
-      tool.purpose.toLowerCase().includes(searchTermLower) ||
-      tool.condition.toLowerCase().includes(searchTermLower)
+      (tool.description?.toLowerCase() || "").includes(searchTermLower)
     );
   });
 

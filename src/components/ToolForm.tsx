@@ -14,15 +14,16 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { CareToolItem } from "@/types";
 
 const toolFormSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
   price: z.string()
     .min(1, { message: "Price is required" })
-    .transform((val) => Number(val)),
+    .transform((val) => parseFloat(val)),
   count: z.string()
     .min(1, { message: "Count is required" })
-    .transform((val) => Number(val)),
+    .transform((val) => parseInt(val, 10)),
   description: z.string().optional(),
 });
 
@@ -35,7 +36,7 @@ interface ToolFormProps {
     count: number;
     description?: string;
   };
-  onSubmit: (values: ToolFormValues) => void;
+  onSubmit: (values: CareToolItem) => void;
   isSubmitting: boolean;
 }
 
@@ -57,11 +58,13 @@ const ToolForm = ({
 
   // Handle form submission
   const handleSubmit = (values: ToolFormValues) => {
-    onSubmit({
-      ...values,
-      price: Number(values.price),
-      count: Number(values.count),
-    });
+    const toolData: CareToolItem = {
+      name: values.name,
+      price: values.price, // Now transformed to number
+      count: values.count, // Now transformed to number
+      description: values.description,
+    };
+    onSubmit(toolData);
   };
 
   return (
