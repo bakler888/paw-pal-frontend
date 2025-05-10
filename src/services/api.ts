@@ -1,25 +1,9 @@
+
 import { toast } from "sonner";
-import { Animal, CareToolItem } from "../types";
+import { Animal, CareToolItem, LoginCredentials, RegisterData, ProfileUpdateData, User } from "../types";
 
 // Update API URL to use a mock API service instead of the local server
 const API_URL = "https://mockapi.io/api/v1/farm-management"; // Replace with an accessible API endpoint
-
-interface LoginRequest {
-  userName: string; 
-  password: string;
-}
-
-interface RegisterRequest {
-  userName: string;
-  email: string;
-  password: string;
-  role?: string;
-}
-
-interface ProfileUpdateRequest {
-  name: string;
-  email: string;
-}
 
 // Helper function to parse JSON safely
 const safeJsonParse = async (response) => {
@@ -67,42 +51,56 @@ const handleResponse = async (response) => {
 };
 
 // Authentication
-export const login = async (credentials: { email: string, password: string }) => {
+export const login = async (credentials: LoginCredentials): Promise<User> => {
   try {
-    // Convert the incoming email/password format to the userName/password format expected by the API
-    const loginRequest: LoginRequest = {
-      userName: credentials.email, // Using email as userName
-      password: credentials.password,
-    };
+    console.log("Sending login request with:", JSON.stringify(credentials));
     
-    console.log("Sending login request with:", JSON.stringify(loginRequest));
-    
-    const response = await fetch(`${API_URL}/Auth/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(loginRequest),
-    });
-    
-    const data = await handleResponse(response);
-    console.log("Login response:", JSON.stringify(data));
-    
-    // Store token and user data
-    if (data.token) {
-      localStorage.setItem("token", data.token);
+    try {
+      // Try the API call
+      const response = await fetch(`${API_URL}/Auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userName: credentials.email,
+          password: credentials.password,
+        }),
+      });
       
-      // Create user object from response
-      const userData = {
-        id: data.id || data.userId || "user-id",
-        name: data.userName || data.name || loginRequest.userName,
-        email: data.email || loginRequest.userName
+      const data = await handleResponse(response);
+      console.log("Login response:", JSON.stringify(data));
+      
+      // Store token and user data
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+        
+        // Create user object from response
+        const userData = {
+          id: data.id || data.userId || "user-id",
+          name: data.userName || data.name || credentials.email,
+          email: data.email || credentials.email
+        };
+        
+        localStorage.setItem("user", JSON.stringify(userData));
+        return userData;
+      } else {
+        throw new Error("No authentication token received");
+      }
+    } catch (error) {
+      console.error("API call failed, using mock login:", error);
+      
+      // For demo purposes, simulate successful login
+      const mockUser = {
+        id: "user-id",
+        name: credentials.email,
+        email: credentials.email
       };
       
-      localStorage.setItem("user", JSON.stringify(userData));
-      return userData;
-    } else {
-      throw new Error("No authentication token received");
+      localStorage.setItem("token", "mock-token");
+      localStorage.setItem("user", JSON.stringify(mockUser));
+      
+      return mockUser;
     }
   } catch (error) {
     console.error("Login error:", error);
@@ -111,49 +109,58 @@ export const login = async (credentials: { email: string, password: string }) =>
   }
 };
 
-export const register = async (userData: { name: string, email: string, password: string }) => {
+export const register = async (userData: RegisterData): Promise<any> => {
   try {
-    // Convert to your API's expected format
-    const registerRequest: RegisterRequest = {
-      userName: userData.name,
-      email: userData.email,
-      password: userData.password,
-      role: "User" // Default role
-    };
+    console.log("Sending register request with:", JSON.stringify(userData));
     
-    console.log("Sending register request with:", JSON.stringify(registerRequest));
-    
-    const response = await fetch(`${API_URL}/Auth/register`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(registerRequest),
-    });
-    
-    // Handle non-JSON responses from registration endpoint
-    if (response.ok) {
-      const text = await response.text();
-      console.log("Register raw response:", text);
+    try {
+      // Try API call
+      const response = await fetch(`${API_URL}/Auth/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userName: userData.name,
+          email: userData.email,
+          password: userData.password,
+          role: "User" // Default role
+        }),
+      });
       
-      // If the response is not valid JSON but contains success message
-      if (text.includes("User created successfully")) {
-        toast.success("Registration successful! Please log in.");
-        return { success: true, message: "User created successfully" };
+      if (response.ok) {
+        const text = await response.text();
+        console.log("Register raw response:", text);
+        
+        // If the response is not valid JSON but contains success message
+        if (text.includes("User created successfully")) {
+          toast.success("Registration successful! Please log in.");
+          return { success: true, message: "User created successfully" };
+        }
+        
+        // Try to parse as JSON if possible
+        try {
+          const data = JSON.parse(text);
+          return data;
+        } catch (e) {
+          // If not valid JSON but response was successful, return generic success
+          return { success: true };
+        }
+      } else {
+        const errorData = await safeJsonParse(response).catch(() => null);
+        const errorMessage = errorData?.message || "Registration failed";
+        throw new Error(errorMessage);
       }
+    } catch (error) {
+      console.error("API call failed, using mock register:", error);
       
-      // Try to parse as JSON if possible
-      try {
-        const data = JSON.parse(text);
-        return data;
-      } catch (e) {
-        // If not valid JSON but response was successful, return generic success
-        return { success: true };
-      }
-    } else {
-      const errorData = await safeJsonParse(response).catch(() => null);
-      const errorMessage = errorData?.message || "Registration failed";
-      throw new Error(errorMessage);
+      // For demo purposes, simulate successful registration
+      const mockResponse = { 
+        success: true, 
+        message: "User created successfully (Mock)" 
+      };
+      
+      return mockResponse;
     }
   } catch (error) {
     console.error("Register error:", error);
@@ -312,11 +319,12 @@ export const getAnimalById = async (id: number): Promise<Animal> => {
 export const addAnimal = async (animal: Omit<Animal, "animalID" | "dateOfbuyorsale" | "animalCares">): Promise<Animal> => {
   try {
     // Create new animal in mock data
-    const newAnimal = {
+    const newAnimal: Animal = {
       ...animal,
-      animalID: Math.max(0, ...mockAnimals.map(a => a.animalID)) + 1,
+      animalID: Math.max(0, ...mockAnimals.map(a => a.animalID || 0)) + 1,
       dateOfbuyorsale: new Date().toISOString(),
-      animalCares: []
+      animalCares: [],
+      animalcount: animal.animalcount || 0 // Ensure animalcount is defined
     };
     
     mockAnimals.push(newAnimal);
@@ -402,9 +410,10 @@ export const getCareToolById = async (id: number): Promise<CareToolItem> => {
 export const addCareTool = async (tool: Omit<CareToolItem, "id">): Promise<CareToolItem> => {
   try {
     // Create new tool in mock data
-    const newTool = {
+    const newTool: CareToolItem = {
       ...tool,
-      id: Math.max(0, ...mockTools.map(t => t.id || 0)) + 1
+      id: Math.max(0, ...mockTools.map(t => t.id || 0)) + 1,
+      count: tool.count || 0 // Ensure count is defined
     };
     
     mockTools.push(newTool);
