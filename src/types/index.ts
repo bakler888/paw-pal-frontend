@@ -5,8 +5,8 @@ export interface Animal {
   name: string;
   animalPrice: number;
   animalcount?: number;
-  description: string; // Changed from optional to required
-  buyorsale: number | "buy" | "sale"; // Can be number (from API) or string (for UI)
+  description: string;
+  buyorsale: number;
   dateOfbuyorsale?: string;
   animalCares?: string[];
 }
@@ -17,5 +17,5 @@ export interface CareToolItem {
   name: string;
   price: number;
   count?: number;
-  description: string; // Changed from optional to required
+  description: string;
 }

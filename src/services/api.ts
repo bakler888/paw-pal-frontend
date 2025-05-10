@@ -1,4 +1,5 @@
 import { toast } from "sonner";
+import { Animal, CareToolItem } from "../types";
 
 // Update API URL to use a mock API service instead of the local server
 const API_URL = "https://mockapi.io/api/v1/farm-management"; // Replace with an accessible API endpoint
@@ -15,25 +16,9 @@ interface RegisterRequest {
   role?: string;
 }
 
-// Updated Animal interface to match the DTO
-interface Animal {
-  animalID: number;
+interface ProfileUpdateRequest {
   name: string;
-  animalPrice: number;
-  animalcount: number;
-  description?: string;
-  buyorsale: string | number; // Accepting both string and number for flexibility
-  dateOfbuyorsale: string;
-  animalCares: string[];
-}
-
-// Updated CareToolItem interface to match the DTO
-interface CareToolItem {
-  id?: number; // Optional for new items
-  name: string;
-  price: number;
-  count: number;
-  description?: string;
+  email: string;
 }
 
 // Helper function to parse JSON safely
@@ -216,6 +201,40 @@ export const getUserInfo = async () => {
     return await handleResponse(response);
   } catch (error) {
     console.error("Get user info error:", error);
+    throw error;
+  }
+};
+
+export const updateUserData = async (data: { name: string, email: string }) => {
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      throw new Error("No authentication token");
+    }
+    
+    // In a mock implementation, we'll just update the local storage
+    // In a real implementation, you would make an API call here
+    console.log("Updating user data:", data);
+    
+    // Get the current user
+    const userStr = localStorage.getItem("user");
+    if (!userStr) {
+      throw new Error("User not found in local storage");
+    }
+    
+    const user = JSON.parse(userStr);
+    const updatedUser = {
+      ...user,
+      name: data.name,
+      email: data.email
+    };
+    
+    // Update user in localStorage
+    localStorage.setItem("user", JSON.stringify(updatedUser));
+    
+    return updatedUser;
+  } catch (error) {
+    console.error("Update user data error:", error);
     throw error;
   }
 };

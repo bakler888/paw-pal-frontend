@@ -1,7 +1,6 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import { login as apiLogin, register as apiRegister, logout as apiLogout, getUserInfo } from "../services/api";
+import { login as apiLogin, register as apiRegister, logout as apiLogout, getUserInfo, updateUserData } from "../services/api";
 import { toast } from "sonner";
 
 interface User {
@@ -21,6 +20,11 @@ interface RegisterData {
   password: string;
 }
 
+interface ProfileUpdateData {
+  name: string;
+  email: string;
+}
+
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
@@ -28,6 +32,7 @@ interface AuthContextType {
   login: (credentials: LoginCredentials) => Promise<void>;
   register: (userData: RegisterData) => Promise<void>;
   logout: () => Promise<void>;
+  updateUserProfile: (data: ProfileUpdateData) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -168,6 +173,35 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const updateUserProfile = async (data: ProfileUpdateData) => {
+    setIsLoading(true);
+    try {
+      // Call API to update user data
+      await updateUserData(data);
+      
+      // Update local user state
+      if (user) {
+        const updatedUser = {
+          ...user,
+          name: data.name,
+          email: data.email
+        };
+        setUser(updatedUser);
+        
+        // Update user in localStorage
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+      }
+      
+      toast.success("Profile updated successfully");
+    } catch (error) {
+      console.error("Update profile error:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to update profile");
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Use the memo pattern to prevent unnecessary re-renders
   const value = React.useMemo(() => ({
     user,
@@ -175,7 +209,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     isLoading,
     login,
     register,
-    logout
+    logout,
+    updateUserProfile
   }), [user, isLoading]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
