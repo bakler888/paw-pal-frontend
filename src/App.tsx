@@ -20,6 +20,7 @@ import ToolDetails from "./pages/ToolDetails";
 import AddTool from "./pages/AddTool";
 import EditTool from "./pages/EditTool";
 import Reports from "./pages/Reports";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -64,6 +65,9 @@ const App = () => (
 
                 {/* Reports Route */}
                 <Route path="/reports" element={<Reports />} />
+                
+                {/* Profile Route */}
+                <Route path="/profile" element={<Profile />} />
               </Route>
             </Route>
 

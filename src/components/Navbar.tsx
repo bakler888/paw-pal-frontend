@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
@@ -32,10 +31,9 @@ const Navbar = ({ toggleSidebar }: NavbarProps) => {
   };
 
   const handleProfileClick = () => {
-    // For now, just log that profile was clicked
     console.log("Profile clicked");
-    // You could navigate to a profile page in the future
-    // navigate("/profile");
+    // Navigate to the profile page
+    navigate("/profile");
   };
 
   return (
